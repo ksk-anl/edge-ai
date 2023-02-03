@@ -12,7 +12,6 @@ import spidev
 import Adafruit_ADS1x15
 import multiprocessing as mp
 
-# TODO: set timezone to always be Asia/Tokyo
 TIMEFORMAT = '%H:%M:%S.%f'
 # RTSURL = 'http://ec2-52-194-91-137.ap-northeast-1.compute.amazonaws.com/rts/api/v1/services/rail/score'
 
@@ -30,24 +29,24 @@ def read_spi_motionsensor(spi):
     z_dat = [0x00, 0x00]
     
     #読み込み設定
-    x_dat[0] = 0x28
+    x_dat[0] = 0x29
     x_dat[0] |= 0x80
     x_dat[0] |= 0x40
 
-    y_dat[0] = 0x2A
+    y_dat[0] = 0x2B
     y_dat[0] |= 0x80
     y_dat[0] |= 0x40
 
-    z_dat[0] = 0x2C
+    z_dat[0] = 0x2D
     z_dat[0] |= 0x80
     z_dat[0] |= 0x40
 
     #データ読み込み
-    readByteArry = spi.xfer2(x_dat)
-    readByteArry = spi.xfer2(y_dat)
-    readByteArry = spi.xfer2(z_dat)
+    x_dat = spi.xfer2(x_dat)
+    y_dat = spi.xfer2(y_dat)
+    z_dat = spi.xfer2(z_dat)
     
-    print(f'x {x_dat}, y {y_dat}, z {z_dat}')
+    # print(f'x {x_dat}, y {y_dat}, z {z_dat}')
 
     return (x_dat[1], y_dat[1], z_dat[1])
     
@@ -94,12 +93,12 @@ def main():
         os.mkdir(OUTPUTFOLDER)
 
     # ----------- For I2C Motion Sensor -----------
-    #I2C設定
-    i2c = smbus2.SMBus(1)
-    address = 0x19
+    # #I2C設定
+    # i2c = smbus2.SMBus(1)
+    # address = 0x19
 
-    #LIS3DH設定
-    i2c.write_byte_data(address, 0x20, 0b10011111)
+    # #LIS3DH設定
+    # i2c.write_byte_data(address, 0x20, 0b10011111)
 
     # #self-test HIGH
     # i2c.write_byte_data(address, 0x23, 0b00000100)
@@ -107,18 +106,19 @@ def main():
     # #self-test LOW
     # i2c.write_byte_data(address, 0x23, 0b00000010)
 
-    # # ----------- For SPI Motion Sensor -----------
-    # # setup SPI LIS3DH
-    # spi = spidev.SpiDev()
-    # spi.open(0, 0)
-    # spi.max_speed_hz = 10000
-    # spi.mode = 3
+    # ----------- For SPI Motion Sensor -----------
+    # setup SPI LIS3DH
+    spi = spidev.SpiDev()
+    spi.open(0, 0)
+    spi.max_speed_hz = 1000000
+    spi.mode = 3
 
-    # s_dat = [0x00, 0x00]
-    # #LIS3DH設定
-    # s_dat[0] = 0x20
-    # s_dat[1] = 0b10011111
-    # readByteArry = spi.xfer2(s_dat)
+    s_dat = [0x00, 0x00]
+    #LIS3DH設定
+    s_dat[0] = 0x20
+    s_dat[1] = 0b10011111
+    readByteArry = spi.xfer2(s_dat)
+    # print(f'write output: {s_dat}')
 
     # setup ADC
     ADC_GAIN = 1
@@ -144,16 +144,19 @@ def main():
         while diff < THRESH:
             diff = adc.read_adc_difference(0, gain = ADC_GAIN)
             diff = diff *4.096*2/4096
+            # print(diff)
             time.sleep(0.1)
+        diff = 0
+        time.sleep(0.1)
         
-        # print(f'Block detected, recording for the next {args.time_per_window} seconds.')
+        print(f'Block detected, recording for the next {args.time_per_window} seconds.')
         
         results = []
         # record window
         t_end = time.time() + delta_t
         while time.time() <= t_end:
-            readings = read_i2c_motionsensor(i2c, address)
-            # readings = read_spi_motionsensor(spi)
+            # readings = read_i2c_motionsensor(i2c, address)
+            readings = read_spi_motionsensor(spi)
             # print(readings)
             results.append(calc_n(*readings))
             count += 1
@@ -169,8 +172,8 @@ def main():
         print(f'Saved file {filenum:03}...')
         filenum += 1
         
-    # spi.close()
-    i2c.close()
+    spi.close()
+    # i2c.close()
         
     print(f"Recorded {count} lines in {delta_t*float(args.number_of_windows)} seconds. ({count*1.0/delta_t} Hz)")
 
