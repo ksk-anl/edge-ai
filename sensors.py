@@ -89,8 +89,7 @@ class LIS3DH_I2C(I2CSensor):
     # ----------- Internal Config Functions ---------------
     # TODO: The rest of the config functions
     def _set_lowpower(self, lowpower = False):
-        # cfg = self.read_register(0x20)
-        cfg = self.i2c.read_byte_data(self.address, 0x20)
+        cfg = self.read_register(0x20)
         
         # set LPen bit on register 20 to either on or off
         if lowpower:
@@ -131,6 +130,7 @@ class LIS3DH_I2C(I2CSensor):
         pass
     
     # ----------------- Data Reading Functions -------
+    # TODO: add normal/high resolution versions
     def _read_sensors_lowpower(self):
         x = self.i2c.read_byte_data(self.address, 0x29)
         y = self.i2c.read_byte_data(self.address, 0x2B)
