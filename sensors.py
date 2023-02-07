@@ -4,6 +4,7 @@ import time
 import datetime
 import spidev
 
+import Adafruit_ADS1x15
 import multiprocessing as mp
 
 TIMEFORMAT = '%H:%M:%S.%f'
@@ -336,3 +337,31 @@ class LIS3DH_SPI(SPISensor):
         output = results.get()
         p.join()
         return output
+    
+class LightSensor(Sensor):
+    def __init__(self, run_in_subprocess=True):
+        super().__init__(run_in_subprocess)
+        
+        # defaults
+        self.ADC_GAIN = 1
+        self.THRESH = 2.5
+        
+        
+        # TODO: make setters for this
+        self.address = 0x48
+        self.busnum = 1
+    
+    def _run(self):
+        diff = 0
+        self.adc = Adafruit_ADS1x15.ADS1015(address = self.address, busnum = self.busnum)
+        
+        while diff < self.THRESH:
+            diff = self.adc.read_adc_difference(0, gain = self.ADC_GAIN)
+            diff = diff*4.096*2/4096
+            time.sleep(0.1)
+        # ends when it goes above the threshold
+    
+    def run_until_detected(self):
+        p = mp.Process(target= self._run)
+        p.start()
+        p.join()
