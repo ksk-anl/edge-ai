@@ -70,9 +70,9 @@ class LIS3DH_I2C(I2CSensor):
         1344: 9,
         5376: 9
         }
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    
+    def __init__(self, busnum, address, **kwargs):
+        super().__init__(busnum, address, **kwargs)
         
         # defaults:
         self.low_power_mode = True
@@ -89,7 +89,8 @@ class LIS3DH_I2C(I2CSensor):
     # ----------- Internal Config Functions ---------------
     # TODO: The rest of the config functions
     def _set_lowpower(self, lowpower = False):
-        cfg = self.read_register(0x20)
+        # cfg = self.read_register(0x20)
+        cfg = self.i2c.read_byte_data(self.address, 0x20)
         
         # set LPen bit on register 20 to either on or off
         if lowpower:
@@ -131,9 +132,9 @@ class LIS3DH_I2C(I2CSensor):
     
     # ----------------- Data Reading Functions -------
     def _read_sensors_lowpower(self):
-        x = self.read_register(0x29)
-        y = self.read_register(0x2B)
-        z = self.read_register(0x2D)
+        x = self.i2c.read_byte_data(self.address, 0x29)
+        y = self.i2c.read_byte_data(self.address, 0x2B)
+        z = self.i2c.read_byte_data(self.address, 0x2D)
         
         return (x, y ,z)
     
@@ -161,9 +162,8 @@ class LIS3DH_I2C(I2CSensor):
         Records as much data as possible in a given amount of time.
         """
         # attach a new instance of the SMBus object
-        self.i2c = smbus2.SMBus
+        self.i2c = smbus2.SMBus(self.busnum)
         
-        # setup the internal settings (inherited from )
         self._setup()
         
         results = []
@@ -172,7 +172,7 @@ class LIS3DH_I2C(I2CSensor):
             if self.low_power_mode:
                 readings = self._read_sensors_lowpower()
                 res = self._calc_n_lowpower(*readings)
-                results.append([f'{datetime.datetime.now()}:{self.TIMEFORMAT}', res])
+                results.append([f'{datetime.datetime.now():{self.TIMEFORMAT}}', res])
             
         output.put(results)
     
@@ -180,4 +180,6 @@ class LIS3DH_I2C(I2CSensor):
         results = mp.Queue()
         p = mp.Process(target= self._run, args=(time, results))
         p.start()
-        return p
+        output = results.get()
+        p.join()
+        return output
