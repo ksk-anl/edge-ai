@@ -1,13 +1,10 @@
 import smbus2
 import math
 import time
-import datetime
 import spidev
 
 import Adafruit_ADS1x15
 import multiprocessing as mp
-
-TIMEFORMAT = '%H:%M:%S.%f'
 
 class Sensor():
     """
@@ -174,7 +171,7 @@ class LIS3DH_I2C(I2CSensor):
             if self.low_power_mode:
                 readings = self._read_sensors_lowpower()
                 res = self._calc_n_lowpower(*readings)
-                results.append([f'{datetime.datetime.now():{TIMEFORMAT}}', res])
+                results.append([f'{time.time()}', res])
             
         output.put(results)
         self.i2c.close()
@@ -325,7 +322,7 @@ class LIS3DH_SPI(SPISensor):
             if self.low_power_mode:
                 readings = self._read_sensors_lowpower()
                 res = self._calc_n_lowpower(*readings)
-                results.append([f'{datetime.datetime.now():{TIMEFORMAT}}', res])
+                results.append([f'{time.time()}', res])
             
         output.put(results)
         self.spi.close()
