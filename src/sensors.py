@@ -9,6 +9,16 @@ import multiprocessing as mp
 
 TIMEFORMAT = '%H:%M:%S.%f'
 
+# TODO: use property decorators 
+    # @property
+    # @absgtract
+    # def i2c(self) -> SMBus()
+# TODO: use Abstract Base Class
+# TODO: make sure NotImplementedErrors are raised
+# TODO: underscores for "private" property name mangling
+# TODO: use queues for inter-process communication (or pipes?)
+    # queues to turn on/off sensors, etc
+
 class Sensor():
     """
     Base class for sensors
@@ -18,6 +28,7 @@ class Sensor():
         self.run_in_subprocess = run_in_subprocess
     
     def run(self):
+        # TODO: this should raise
         return NotImplementedError
     
 class I2CSensor(Sensor):
@@ -42,6 +53,7 @@ class I2CSensor(Sensor):
         Input:
             dict of the form {register: value}
         """
+        # TODO: don't abbreviate names
         for (reg, val) in targets.items():
             self.write_register(reg, val)
 
