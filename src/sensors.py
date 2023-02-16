@@ -7,7 +7,8 @@ import spidev
 import Adafruit_ADS1x15
 import multiprocessing as mp
 
-TIMEFORMAT = '%H:%M:%S.%f'
+# TIMEFORMAT = '%H:%M:%S.%f'
+TIMEFORMAT = '%Y-%m-%d %H:%M:%S.%f'
 
 # TODO: use property decorators 
     # @property
