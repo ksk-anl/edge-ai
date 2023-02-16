@@ -4,6 +4,8 @@ import psycopg2
 
 import pandas as pd
 
+from psycopg2.extras import execute_batch
+
 def main():
     OUTPUTFOLDER = 'output'
     
@@ -19,15 +21,6 @@ def main():
         out = motionsensor.run_for(3)
         print(f'Recorded {len(out)} lines! Back to waiting for blockage.')
 
-        # write csv
-        final = pd.DataFrame(data = {'unixtime' : [row[0] for row in out], 
-                                     'gravity'  : [row[1] for row in out]})
-        
-        filename = out[0][0].split('.')[0] # get only the whole number part
-        
-        filepath = f'{OUTPUTFOLDER}/{filename}.csv'
-        
-        final.to_csv(filepath)
         
         # TODO: RDB stuff
         # try to send to RDB/RTS
@@ -39,8 +32,26 @@ def main():
         conn.commit()
         
         id = cursor.fetchone()[0]
+
+        # write csv
+        final = pd.DataFrame(data = {'section_id' : [id] * len(out),
+                                     'unixtime'   : [row[0] for row in out], 
+                                     'gravity'    : [row[1] for row in out]})
+        
+        filename = out[0][0].split('.')[0] # get only the whole number part
+        
+        filepath = f'{OUTPUTFOLDER}/{filename}.csv'
+        
+        final.to_csv(filepath)
         
         # write data to gravity table
+        execute_batch(cursor,
+                      """
+                      INSERT into gravity(section_id, unixtime, gravity) values (%s, %s, %s)
+                      """,
+                      [tuple(row) for row in final.to_numpy()])
+        
+        conn.commit()
         
         # send id to RTS/server
         
