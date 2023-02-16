@@ -4,13 +4,15 @@ import psycopg2
 import requests
 import time
 
+import statistics
+
 import pandas as pd
 
 from psycopg2.extras import execute_batch
 from requests.auth import HTTPBasicAuth
 
 OUTPUTFOLDER = 'output'
-RTSURL = ''
+RTSURL = 'http://ec2-52-194-91-137.ap-northeast-1.compute.amazonaws.com/rts/api/v1/services/db_test/write_predictions'
 RDBACCESS = {
     'dbname': 'edge',
     'user'  :   'postgres',
@@ -40,7 +42,7 @@ def main():
         
         # TODO: RDB stuff
         # try to send to RDB/RTS
-        conn = psycopg2.connect(**RDBACCESS)# stuff
+        conn = psycopg2.connect(**RDBACCESS)
         cursor = conn.cursor()
 
         # write to section table, get section id
@@ -57,39 +59,51 @@ def main():
                                      'time'       : [row[0] for row in out], 
                                      'gravity'    : [row[1] for row in out]})
         
-        filename = out[0][0]#.split('.')[0] # get only the whole number part
+        # filename = out[0][0]#.split('.')[0] # get only the whole number part
         
-        filepath = f'{OUTPUTFOLDER}/{filename}.csv'
+        # filepath = f'{OUTPUTFOLDER}/{filename}.csv'
         
-        final.to_csv(filepath)
+        # final.to_csv(filepath)
         
         # print(final.head)
-        # write data to gravity table
-        execute_batch(cursor,
-                      """
-                      INSERT into gravities (section_id, time, gravity) values (%s, %s, %s)
-                      """,
-                      [tuple(row) for row in final.to_numpy()])
-        # with open(filepath, 'r') as f:
-        #     conn.copy_from(f, 'gravities', sep = ',')
-        conn.commit()
+        # # write data to gravity table
+        # execute_batch(cursor,
+        #               """
+        #               INSERT into gravities (section_id, time, gravity) values (%s, %s, %s)
+        #               """,
+        #               [tuple(row) for row in final.to_numpy()])
+        # # with open(filepath, 'r') as f:
+        # #     conn.copy_from(f, 'gravities', sep = ',')
+        # conn.commit()
         
-        cursor.close()
-        conn.close()
         print("Finished Sending to RDB")
         
         # send id to RTS/server
-        # res = requests.post(RTSURL, json = {
-        #     'data': [{'y.sum':total}]},
-        #     # timeout = 5,
-        #     auth = HTTPBasicAuth('demoksk','demoksk_pass')
-        #     )
         
+        # TEMP: send data directly to RTS
+        
+        stddev = statistics.stdev(final.loc[:,'gravity'])
+        res = requests.post(RTSURL, json = {
+            'data': [ 
+                { 'gravity.std deviation' : stddev}
+                ]
+            },
+            auth = HTTPBasicAuth('demo_rts','demo_raspi')
+            )
+        
+        pred = res.json()['data'][0]['prediction(label)']
+        print(pred)
+
+        cursor.execute('INSERT INTO predictions (section_id, normal) VALUES (%s, %s);', (id, pred == 'normal'))
+        conn.commit()
+
+        cursor.close()
+        conn.close()
         # success = True
         
         # # if successful, delete the csv
         # if success:
-        os.remove(filepath)
+        # os.remove(filepath)
         
 
 if __name__ == '__main__':
