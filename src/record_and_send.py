@@ -32,10 +32,10 @@ def main():
         print('Waiting for blockage...')
         adc.run_until_detected()
         
-        time.sleep(0.5)
+        time.sleep(0.25)
         
         out = motionsensor.run_for(3)
-        print(f'Recorded {len(out)} lines! Back to waiting for blockage.')
+        print(f'Recorded {len(out)} lines!')
 
         
         # TODO: RDB stuff
@@ -46,6 +46,8 @@ def main():
         # write to section table, get section id
         cursor.execute('INSERT INTO sections (device_id, start_time) VALUES (%s, %s) RETURNING id;', (DEVICE_ID, out[0][0]))
         conn.commit()
+
+        print("Wrote to sections table...")
         
         id = cursor.fetchone()[0]
         # print(id)
@@ -55,11 +57,11 @@ def main():
                                      'time'       : [row[0] for row in out], 
                                      'gravity'    : [row[1] for row in out]})
         
-        # filename = out[0][0].split('.')[0] # get only the whole number part
+        filename = out[0][0]#.split('.')[0] # get only the whole number part
         
-        # filepath = f'{OUTPUTFOLDER}/{filename}.csv'
+        filepath = f'{OUTPUTFOLDER}/{filename}.csv'
         
-        # final.to_csv(filepath)
+        final.to_csv(filepath)
         
         # print(final.head)
         # write data to gravity table
@@ -68,7 +70,13 @@ def main():
                       INSERT into gravities (section_id, time, gravity) values (%s, %s, %s)
                       """,
                       [tuple(row) for row in final.to_numpy()])
+        # with open(filepath, 'r') as f:
+        #     conn.copy_from(f, 'gravities', sep = ',')
         conn.commit()
+        
+        cursor.close()
+        conn.close()
+        print("Finished Sending to RDB")
         
         # send id to RTS/server
         # res = requests.post(RTSURL, json = {
@@ -81,7 +89,7 @@ def main():
         
         # # if successful, delete the csv
         # if success:
-        #     os.remove(filepath)
+        os.remove(filepath)
         
 
 if __name__ == '__main__':
