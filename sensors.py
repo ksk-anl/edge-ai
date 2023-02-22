@@ -7,7 +7,8 @@ import spidev
 import Adafruit_ADS1x15
 import multiprocessing as mp
 
-TIMEFORMAT = '%H:%M:%S.%f'
+# TIMEFORMAT = '%H:%M:%S.%f'
+TIMEFORMAT = '%Y-%m-%d %H:%M:%S.%f'
 
 # TODO: use property decorators 
     # @property
@@ -214,14 +215,17 @@ class SPISensor(Sensor):
         to_write[1] = value
         
         self.spi.xfer2(to_write)
+        # print(bin(to_write[1]))
         
     def read_register(self, address):
         to_read = [0x00, 0x00]
         
-        to_read[0] = address
+        to_read[0] = address | 0x80
         
-        return self.spi.xfer2(to_read)[1]
-        
+        to_read = self.spi.xfer2(to_read)
+        # print(to_read)
+        return to_read[1]
+
 class LIS3DH_SPI(SPISensor):
     DATARATES = {
         1:    1,
@@ -265,6 +269,7 @@ class LIS3DH_SPI(SPISensor):
     
     def _enable_axes(self, x = True, y = True, z = True):
         cfg = self.read_register(0x20)
+        # print(bin(cfg))
 
         if x: 
             cfg |= 0b001
@@ -272,6 +277,8 @@ class LIS3DH_SPI(SPISensor):
             cfg |= 0b010
         if z:
             cfg |= 0b100
+            
+        # print(bin(cfg))
         
         self.write_register(0x20, cfg)
     
@@ -280,9 +287,13 @@ class LIS3DH_SPI(SPISensor):
             raise "Data Rate must be one of: 1, 10, 25, 50, 100, 200, 400, 1600, 1344, 5376Hz"
 
         cfg = self.read_register(0x20)
+        # print(bin(cfg))
         
         cfg |= self.DATARATES[datarate] << 4
+        # print(bin(cfg))
         self.write_register(0x20, cfg)
+        
+        # print(bin(cfg))
         
         if (datarate == 1600) | (datarate == 5376):
             self._set_lowpower(True)
@@ -336,6 +347,7 @@ class LIS3DH_SPI(SPISensor):
         while time.time() <= time_end:
             if self.low_power_mode:
                 readings = self._read_sensors_lowpower()
+                # print(readings)
                 res = self._calc_n_lowpower(*readings)
                 results.append([f'{datetime.datetime.now():{TIMEFORMAT}}', res])
             
