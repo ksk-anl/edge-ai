@@ -5,6 +5,8 @@ from basebus import BaseBus
 class I2CBus(BaseBus):
     def __init__(self, address):
         self._address = address
+        
+    def start(self):
         self.i2c = smbus2.SMBus(address)
         
     def write_register(self, address, value):

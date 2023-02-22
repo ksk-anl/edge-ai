@@ -6,6 +6,10 @@ class BaseBus(ABC):
         ...
         
     @abstractmethod
+    def start(self):
+        ...
+        
+    @abstractmethod
     def read_register(self, address):
         ...
 

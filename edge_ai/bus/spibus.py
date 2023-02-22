@@ -4,8 +4,12 @@ from basebus import BaseBus
 
 class SPIBUS(BaseBus):
     def __init__(self, busnum, cs):
+        self.busnum = busnum
+        self.cs = cs
+    
+    def start(self):
         self.spi = spidev.SpiDev()
-        self.spi.open(busnum, cs)
+        self.spi.open(self.busnum, self.cs)
         
     def read_register(self, address):
         to_read = [address | 0x80, 0x00]
