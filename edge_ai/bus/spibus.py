@@ -1,6 +1,6 @@
 import spidev
 
-from basebus import BaseBus
+from .basebus import BaseBus
 
 class SPIBUS(BaseBus):
     def __init__(self, busnum, cs):

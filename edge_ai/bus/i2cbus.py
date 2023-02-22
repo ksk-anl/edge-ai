@@ -1,13 +1,13 @@
 import smbus2
 
-from basebus import BaseBus
+from .basebus import BaseBus
 
 class I2CBus(BaseBus):
     def __init__(self, address):
         self._address = address
         
     def start(self):
-        self.i2c = smbus2.SMBus(address)
+        self.i2c = smbus2.SMBus(self.address)
         
     def write_register(self, address, value):
         self.i2c.write_byte_data(address, value)
