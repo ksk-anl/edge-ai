@@ -66,15 +66,15 @@ def main():
         # final.to_csv(filepath)
         
         # print(final.head)
-        # # write data to gravity table
-        # execute_batch(cursor,
-        #               """
-        #               INSERT into gravities (section_id, time, gravity) values (%s, %s, %s)
-        #               """,
-        #               [tuple(row) for row in final.to_numpy()])
-        # # with open(filepath, 'r') as f:
-        # #     conn.copy_from(f, 'gravities', sep = ',')
-        # conn.commit()
+        # write data to gravity table
+        execute_batch(cursor,
+                      """
+                      INSERT into gravities (section_id, time, gravity) values (%s, %s, %s)
+                      """,
+                      [tuple(row) for row in final.to_numpy()])
+        # with open(filepath, 'r') as f:
+        #     conn.copy_from(f, 'gravities', sep = ',')
+        conn.commit()
         
         print("Finished Sending to RDB")
         
