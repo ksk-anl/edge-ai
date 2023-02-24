@@ -1,9 +1,15 @@
 from abc import ABC, abstractmethod
 
-class Sensor(ABC):
+class BaseSensor(ABC):
     def __init__(self) -> None:
         super().__init__()
-        
+    
+    @property
+    @abstractmethod
+    def _process(self):
+        return self._process
+        ...
+    
     @abstractmethod
     def start(self):
         ...
