@@ -1,6 +1,6 @@
 import multiprocessing as mp
 
-from typing import Type, Tuple
+from typing import Type
 from abc import ABC, abstractmethod
 from multiprocessing.connection import Connection
 
@@ -29,7 +29,7 @@ class BaseSensor(ABC):
     
     def start(self):
         self._process = mp.Process(target = self.__internal_loop, 
-                                   args = (self._internal_pipe, ))
+                                   args = (self._bus, self._internal_pipe, ))
         self._process.start()
     
     def stop(self):
@@ -42,5 +42,5 @@ class BaseSensor(ABC):
         return self._external_pipe.recv()
 
     @abstractmethod
-    def __internal_loop(self):
+    def __internal_loop(self, bus: Type[BaseBus], pipe: Connection):
         ...
