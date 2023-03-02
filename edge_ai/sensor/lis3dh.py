@@ -94,7 +94,7 @@ class LIS3DH(BaseSensor):
         self._bus.write_register(0x20, cfg)
 
     def _setup(self):
-        self._enable_axes(*self._axes)
+        self._enable_axes(self.x, self.y, self.z)
         self._set_datarate(self._datarate)
 
     def _read_sensors_lowpower(self):
