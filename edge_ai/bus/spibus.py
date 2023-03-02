@@ -3,7 +3,7 @@ import spidev
 from .basebus import BaseBus
 
 class SPIBus(BaseBus):
-    def __init__(self, busnum, cs, maxspeed = 1_000_000, mode = 3):
+    def __init__(self, busnum, cs, maxspeed = 1_000_000, mode = 3, debug = False):
         self.busnum = busnum
         self.cs = cs
         self.maxspeed = maxspeed
