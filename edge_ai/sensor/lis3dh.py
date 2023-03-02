@@ -161,9 +161,30 @@ class LIS3DH(BaseSensor):
         self._scale = value
         
     @property
-    def axes(self) -> Tuple[bool, bool, bool]:
-        return self._axes
-    
-    @axes.setter
-    def axes(self, x: bool, y: bool, z: bool):
-        self._axes = (x, y, z)
+    def x(self) -> bool:
+        return self._x_enabled
+
+    @x.setter
+    def x(self, value):
+        self._x_enabled = value
+        
+    @property
+    def y(self) -> bool:
+        return self._z_enabled
+
+    @y.setter
+    def y(self, value):
+        self._y_enabled = value
+        
+    @property
+    def z(self) -> bool:
+        return self._z_enabled
+
+    @z.setter
+    def z(self, value):
+        self._z_enabled = value
+
+    def enable_axes(self, x = True, y = True,z = True):
+        self.x = x
+        self.y = y
+        self.z = z
