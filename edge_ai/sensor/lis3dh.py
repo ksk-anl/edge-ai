@@ -110,6 +110,7 @@ class LIS3DH(BaseSensor):
         self._bus.write_register(0x23, cfg)
 
     def _setup(self):
+        #TODO: setter and config for scale
         self._enable_axes(self.x, self.y, self.z)
         self._set_datarate(self._datarate)
         self._set_selftest(self._selftest)
@@ -126,6 +127,16 @@ class LIS3DH(BaseSensor):
         status = (status >> 3) & 1
         return status
 
+    def _convert_to_gs(self, value) -> float:
+        if self._lowpower:
+            BITS = 8
+            
+        max_val = 2**8
+        if value > max_val/2.:
+            value -= max_val
+
+        return float(value) / ((max_val/2)/self._scale)
+
     def _internal_loop(self, pipe: Connection):
         # this is a loop that manages the running of the sensor.
 
@@ -141,7 +152,8 @@ class LIS3DH(BaseSensor):
             # if there's new data in the sensor, update latest value
             if self._new_data_available():
                 #TODO: non-lowpower version
-                latest_value = self._read_sensors_lowpower()
+                raw_values = self._read_sensors_lowpower()
+                latest_value = [self._convert_to_gs(value) for value in raw_values]
 
             # poll the pipe
             if pipe.poll():
