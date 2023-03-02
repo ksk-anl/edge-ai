@@ -8,6 +8,9 @@ def main():
     
     for _ in range(5):
         print(motionsensor.read())
+    
+    print("Finished recording")
+    motionsensor.stop()
 
 if __name__ == '__main__':
     main()
