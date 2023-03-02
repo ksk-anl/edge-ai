@@ -38,7 +38,7 @@ class BaseSensor(ABC):
     def start(self):
         self._running = True
         self._process = mp.Process(target = self._internal_loop, 
-                                   args = (self._internal_pipe))
+                                   args = (self._internal_pipe, ))
         self._process.start()
     
     def stop(self):
