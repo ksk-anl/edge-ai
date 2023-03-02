@@ -32,6 +32,7 @@ class LIS3DH(BaseSensor):
         self._lowpower = True
         self._scale = 2
         self._datarate = 5376
+        self._selftest = None
         
     @staticmethod
     def SPI(busnum, cs, maxspeed = 1_000_000, mode = 3, debug = False) -> 'LIS3DH':
@@ -92,10 +93,26 @@ class LIS3DH(BaseSensor):
             cfg &= 0b11110111
         
         self._bus.write_register(0x20, cfg)
+        
+    def _set_selftest(self, value):
+        if value == None: 
+            return
+        
+        cfg = self._bus.read_register(0x23)
+        
+        cfg &= 0b001
+        
+        if value == 'high':
+            cfg |= 0b100
+        elif value == 'low':
+            cfg |= 0b010
+
+        self._bus.write_register(0x23, cfg)
 
     def _setup(self):
         self._enable_axes(self.x, self.y, self.z)
         self._set_datarate(self._datarate)
+        self._set_selftest(self._selftest)
 
     def _read_sensors_lowpower(self):
         x = self._bus.read_register(0x29)
@@ -188,3 +205,6 @@ class LIS3DH(BaseSensor):
         self.x = x
         self.y = y
         self.z = z
+    
+    def selftest(self, test = None):
+        self._selftest = test
