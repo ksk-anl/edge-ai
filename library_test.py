@@ -1,3 +1,5 @@
+import math
+
 from edge_ai.sensor import LIS3DH
 
 def main():
@@ -9,7 +11,11 @@ def main():
     motionsensor.start()
     
     for _ in range(200):
-        print(motionsensor.read())
+        values = motionsensor.read()
+        
+        final_value = math.sqrt(sum([x**2 for x in values]))
+        
+        print(final_value)
     
     print("Finished recording")
     motionsensor.stop()
