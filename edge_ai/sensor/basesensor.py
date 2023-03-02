@@ -8,24 +8,28 @@ from ..bus import BaseBus
 
 class BaseSensor(ABC):
     def __init__(self, bus: Type[BaseBus]) -> None:
-        self.pipe_external, self.pipe_internal = mp.Pipe(True)
+        self._external_pipe, self._internal_pipe = mp.Pipe(True)
         self._bus = bus
     
-    @property
-    def _internal_pipe(self) -> Connection:
-        return self.pipe_internal
+    # @property
+    # def _internal_pipe(self) -> Connection:
+    #     return self.pipe_internal
         
-    @property
-    def _external_pipe(self) -> Connection:
-        return self.pipe_external
+    # @property
+    # def _external_pipe(self) -> Connection:
+    #     return self.pipe_external
 
-    @property
-    def _bus(self) -> Type[BaseBus]:
-        return self._bus
+    # @property
+    # def _bus(self) -> Type[BaseBus]:
+    #     return self._bus
+    
+    # @_bus.setter
+    # def _bus(self):
         
-    @property
-    def _process(self) -> mp.Process:
-        return self._process
+        
+    # @property
+    # def _process(self) -> mp.Process:
+    #     return self._process
     
     def start(self):
         self._process = mp.Process(target = self._internal_loop, 
