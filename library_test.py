@@ -5,7 +5,7 @@ def main():
     motionsensor = LIS3DH.SPI(0, 0)
     motionsensor.datarate = 5376
     motionsensor.enable_axes()
-    motionsensor.selftest('high')
+    # motionsensor.selftest('high')
     motionsensor.start()
     
     for _ in range(200):
