@@ -3,7 +3,7 @@ import smbus2
 
 import multiprocessing as mp
 
-from typing import Type
+from typing import Tuple
 from multiprocessing.connection import Connection
 
 from . import BaseSensor
@@ -94,7 +94,7 @@ class LIS3DH(BaseSensor):
         self._bus.write_register(0x20, cfg)
 
     def _setup(self):
-        self._enable_axes(x = True, y = True, z = True)
+        self._enable_axes(*self._axes)
         self._set_datarate(self._datarate)
 
     def _read_sensors_lowpower(self):
@@ -155,3 +155,15 @@ class LIS3DH(BaseSensor):
     @property
     def scale(self):
         return self._scale
+
+    @scale.setter
+    def scale(self, value):
+        self._scale = value
+        
+    @property
+    def axes(self) -> Tuple[bool, bool, bool]:
+        return self._axes
+    
+    @axes.setter
+    def axes(self, x: bool, y: bool, z: bool):
+        self._axes = (x, y, z)
