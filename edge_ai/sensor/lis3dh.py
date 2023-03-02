@@ -1,10 +1,13 @@
+import spidev
+import smbus2
+
 import multiprocessing as mp
 
 from typing import Type
 from multiprocessing.connection import Connection
 
 from . import BaseSensor
-from ..bus import BaseBus
+from ..bus import BaseBus, SPIBus, I2CBus
 
 class LIS3DH(BaseSensor):
     DATARATES = {
@@ -25,11 +28,69 @@ class LIS3DH(BaseSensor):
 
         self._lowpower = True
         self._scale = 2
-    
-    def _setup(self):
-        pass
+        
+    @staticmethod
+    def SPI(busnum, cs, maxspeed = 1_000_000, mode = 3) -> 'LIS3DH':
+        return LIS3DH(SPIBus(busnum, cs, maxspeed, mode))
 
-    def __internal_loop(self, bus: Type[BaseBus], pipe: Connection):
+    @staticmethod
+    def I2C(address) -> 'LIS3DH':
+        return LIS3DH(I2CBus(address))
+
+    def _enable_axes(self, x = True, y = True, z = True):
+        cfg = self._bus.read_register(0x20)
+
+        if x: 
+            cfg |= 0b001
+        if y: 
+            cfg |= 0b010
+        if z:
+            cfg |= 0b100
+            
+        self._bus.write_register(0x20, cfg)
+
+    def _set_datarate(self, datarate):
+        #TODO: Make datarate and lowpower settings more robust
+        if datarate not in self.DATARATES.keys():
+            raise "Data Rate must be one of: 1, 10, 25, 50, 100, 200, 400, 1600, 1344, 5376Hz"
+
+        cfg = self._bus.read_register(0x20)
+        
+        cfg |= self.DATARATES[datarate] << 4
+
+        self._bus.write_register(0x20, cfg)
+        
+        if (datarate == 1600) | (datarate == 5376):
+            self._set_lowpower(True)
+
+    def _set_lowpower(self, lowpower = False):
+        cfg = self._bus.read_register(0x20)
+        
+        # set LPen bit on register 20 to either on or off
+        if lowpower:
+            cfg |= 0b00001000
+        else:
+            cfg &= 0b11110111
+        
+        self._bus.write_register(0x20, cfg)
+
+    def _setup(self):
+        self._enable_axes(x = True, y = True, z = True)
+        self._set_datarate(self._datarate)
+
+    def _read_sensors_lowpower(self):
+        x = self._bus.read_register(0x29)
+        y = self._bus.read_register(0x2B)
+        z = self._bus.read_register(0x2D)
+        
+        return (x, y ,z)
+
+    def _new_data_available(self) -> bool:
+        status = self._bus.read_register(0x27)
+        status = (status >> 3) & 1
+        return status
+
+    def _internal_loop(self, bus: Type[BaseBus], pipe: Connection):
         # this is a loop that manages the running of the sensor.
 
         # Initialize Bus
@@ -37,22 +98,22 @@ class LIS3DH(BaseSensor):
         
         # Write any settings, config, etc
         self._setup()
-
-        # bus.write_register()
-        
         
         latest_value = None
         while True:
+            # if there's new data in the sensor, update latest value
+            if self._new_data_available():
+                #TODO: non-lowpower version
+                latest_value = self._read_sensors_lowpower()
+
             # poll the pipe
             if pipe.poll():
                 message = pipe.recv()
-            
-            # if pipe says "read", send out the data into the pipe
+                
+                # if pipe says "read", send out the data into the pipe
+                if message == "read":
+                    pipe.send(latest_value)
 
-            # if there's new data in the sensor, update latest value
-            pass
-        pass
-    
     @property
     def datarate(self):
         return self._datarate

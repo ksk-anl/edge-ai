@@ -28,8 +28,8 @@ class BaseSensor(ABC):
         return self._process
     
     def start(self):
-        self._process = mp.Process(target = self.__internal_loop, 
-                                   args = (self._bus, self._internal_pipe, ))
+        self._process = mp.Process(target = self._internal_loop, 
+                                   args = (self._bus, self._internal_pipe))
         self._process.start()
     
     def stop(self):
@@ -42,5 +42,5 @@ class BaseSensor(ABC):
         return self._external_pipe.recv()
 
     @abstractmethod
-    def __internal_loop(self, bus: Type[BaseBus], pipe: Connection):
+    def _internal_loop(self, bus: Type[BaseBus], pipe: Connection):
         ...

@@ -7,7 +7,7 @@ class I2CBus(BaseBus):
         self._address = address
         
     def start(self):
-        self.i2c = smbus2.SMBus(self.address)
+        self.i2c = smbus2.SMBus(self._address)
         
     def write_register(self, address, value):
         self.i2c.write_byte_data(address, value)

@@ -2,10 +2,12 @@ import spidev
 
 from .basebus import BaseBus
 
-class SPIBUS(BaseBus):
-    def __init__(self, busnum, cs):
+class SPIBus(BaseBus):
+    def __init__(self, busnum, cs, maxspeed = 1_000_000, mode = 3):
         self.busnum = busnum
         self.cs = cs
+        self.maxspeed = maxspeed
+        self.mode = mode
     
     def start(self):
         self.spi = spidev.SpiDev()
