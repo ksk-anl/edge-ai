@@ -10,6 +10,8 @@ class BaseSensor(ABC):
     def __init__(self, bus: Type[BaseBus], debug = False) -> None:
         self._external_pipe, self._internal_pipe = mp.Pipe(True)
         self._bus = bus
+        self._running = False
+        
         self.DEBUG = debug
     
     # @property
@@ -33,6 +35,7 @@ class BaseSensor(ABC):
     #     return self._process
     
     def start(self):
+        self._running = True
         self._process = mp.Process(target = self._internal_loop, 
                                    args = (self._bus, self._internal_pipe))
         self._process.start()
