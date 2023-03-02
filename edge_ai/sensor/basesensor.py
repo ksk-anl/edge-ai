@@ -4,12 +4,13 @@ from typing import Type
 from abc import ABC, abstractmethod
 from multiprocessing.connection import Connection
 
-from ..bus import BaseBus
+from ..bus import BaseBus, SPIBus, I2CBus
 
 class BaseSensor(ABC):
-    def __init__(self, bus: Type[BaseBus], debug = False) -> None:
+    # def __init__(self, bus: Type[BaseBus], debug = False) -> None:
+    def __init__(self, debug = False) -> None:
         self._external_pipe, self._internal_pipe = mp.Pipe(True)
-        self._bus = bus
+        # self._bus = bus
         self._running = False
         
         self.DEBUG = debug
@@ -54,6 +55,13 @@ class BaseSensor(ABC):
             print("Waiting for return from pipe...")
         
         return self._external_pipe.recv()
+
+    @staticmethod
+    def _initialize_bus(busconfig) -> Type[BaseBus]:
+        if busconfig['type'] == 'spi':
+            return SPIBus(**busconfig)
+        elif busconfig['type'] == 'i2c':
+            return I2CBus(**busconfig)
 
     @abstractmethod
     def _internal_loop(self, bus: Type[BaseBus], pipe: Connection):

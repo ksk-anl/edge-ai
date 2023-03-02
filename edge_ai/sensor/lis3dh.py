@@ -31,11 +31,26 @@ class LIS3DH(BaseSensor):
         
     @staticmethod
     def SPI(busnum, cs, maxspeed = 1_000_000, mode = 3, debug = False) -> 'LIS3DH':
-        return LIS3DH(SPIBus(busnum, cs, maxspeed, mode), debug)
+        sensor = LIS3DH(debug)
+        sensor._busconfig = {
+            'type' : 'spi',
+            'busnum' : busnum,
+            'cs' : cs,
+            'maxspeed' : maxspeed,
+            'mode' : mode,
+            'debug' : debug
+        }
+        return sensor
 
     @staticmethod
     def I2C(address, debug = False) -> 'LIS3DH':
-        return LIS3DH(I2CBus(address), debug)
+        sensor = LIS3DH(debug)
+        sensor._busconfig = {
+            'type' : 'spi',
+            'address' : address,
+            'debug' : debug
+        }
+        return sensor
 
     def _enable_axes(self, x = True, y = True, z = True):
         cfg = self._bus.read_register(0x20)
@@ -90,10 +105,11 @@ class LIS3DH(BaseSensor):
         status = (status >> 3) & 1
         return status
 
-    def _internal_loop(self, bus: Type[BaseBus], pipe: Connection):
+    def _internal_loop(self, busconfig: dict, pipe: Connection):
         # this is a loop that manages the running of the sensor.
 
         # Initialize Bus
+        bus = self._initialize_bus(busconfig)
         bus.start()
         
         # Write any settings, config, etc
@@ -115,8 +131,10 @@ class LIS3DH(BaseSensor):
                 
                 # if pipe says "read", send out the data into the pipe
                 if message == "read":
+                    
                     if self.DEBUG:
                         print(f"Sending latest value '{latest_value}'...")
+                    
                     pipe.send(latest_value)
 
     @property
