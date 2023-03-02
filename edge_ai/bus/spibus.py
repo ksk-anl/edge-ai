@@ -11,9 +11,9 @@ class SPIBus(BaseBus):
     
     def start(self):
         self.spi = spidev.SpiDev()
+        self.spi.open(self.busnum, self.cs)
         self.spi.max_speed_hz = self.maxspeed
         self.spi.mode = self.mode
-        self.spi.open(self.busnum, self.cs)
         
     def read_register(self, address):
         to_read = [address | 0x80, 0x00]
