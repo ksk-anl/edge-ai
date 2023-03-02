@@ -1,12 +1,12 @@
 from edge_ai.sensor import LIS3DH
 
 def main():
-    print("Testing Motion Sensor Values: (reading 5 values)")
-    motionsensor = LIS3DH.SPI(0, 0, debug = True)
+    print("Testing Motion Sensor Values: (reading 200 values)")
+    motionsensor = LIS3DH.SPI(0, 0)
     motionsensor.datarate = 5376
     motionsensor.start()
     
-    for _ in range(5):
+    for _ in range(200):
         print(motionsensor.read())
     
     print("Finished recording")
