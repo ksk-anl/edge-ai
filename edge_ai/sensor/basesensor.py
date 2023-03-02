@@ -57,12 +57,12 @@ class BaseSensor(ABC):
         return self._external_pipe.recv()
 
     @staticmethod
-    def _initialize_bus(busconfig) -> Type[BaseBus]:
-        if busconfig['type'] == 'spi':
+    def _initialize_bus(bustype, busconfig) -> Type[BaseBus]:
+        if bustype == 'spi':
             return SPIBus(**busconfig)
-        elif busconfig['type'] == 'i2c':
+        elif bustype == 'i2c':
             return I2CBus(**busconfig)
 
     @abstractmethod
-    def _internal_loop(self, bus: Type[BaseBus], pipe: Connection):
+    def _internal_loop(self, pipe: Connection):
         ...

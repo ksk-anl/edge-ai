@@ -34,8 +34,8 @@ class LIS3DH(BaseSensor):
     @staticmethod
     def SPI(busnum, cs, maxspeed = 1_000_000, mode = 3, debug = False) -> 'LIS3DH':
         sensor = LIS3DH(debug)
+        sensor._bustype = 'spi'
         sensor._busconfig = {
-            'type' : 'spi',
             'busnum' : busnum,
             'cs' : cs,
             'maxspeed' : maxspeed,
@@ -47,8 +47,8 @@ class LIS3DH(BaseSensor):
     @staticmethod
     def I2C(address, debug = False) -> 'LIS3DH':
         sensor = LIS3DH(debug)
+        sensor._bustype = 'i2c'
         sensor._busconfig = {
-            'type' : 'spi',
             'address' : address,
             'debug' : debug
         }
@@ -107,11 +107,11 @@ class LIS3DH(BaseSensor):
         status = (status >> 3) & 1
         return status
 
-    def _internal_loop(self, busconfig: dict, pipe: Connection):
+    def _internal_loop(self, pipe: Connection):
         # this is a loop that manages the running of the sensor.
 
         # Initialize Bus
-        self._bus = self._initialize_bus(busconfig)
+        self._bus = self._initialize_bus(self._bustype, self._busconfig)
         self._bus.start()
         
         # Write any settings, config, etc
