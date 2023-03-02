@@ -6,7 +6,8 @@ def main():
     motionsensor.datarate = 5376
     motionsensor.start()
     
-    for _ in range(200):
+    # for _ in range(200):
+    while True:
         print(motionsensor.read())
     
     print("Finished recording")

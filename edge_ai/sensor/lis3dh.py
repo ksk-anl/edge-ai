@@ -122,9 +122,9 @@ class LIS3DH(BaseSensor):
         latest_value = None
         while True:
             # if there's new data in the sensor, update latest value
-            # if self._new_data_available():
-            #     #TODO: non-lowpower version
-            latest_value = self._read_sensors_lowpower()
+            if self._new_data_available():
+                #TODO: non-lowpower version
+                latest_value = self._read_sensors_lowpower()
 
             # poll the pipe
             if pipe.poll():
