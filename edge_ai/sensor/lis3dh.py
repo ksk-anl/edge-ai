@@ -23,19 +23,19 @@ class LIS3DH(BaseSensor):
         5376: 9
         }
 
-    def __init__(self, bus: Type[BaseBus]) -> None:
-        super().__init__(bus)
+    def __init__(self, bus: Type[BaseBus], debug = False) -> None:
+        super().__init__(bus, debug)
 
         self._lowpower = True
         self._scale = 2
         
     @staticmethod
-    def SPI(busnum, cs, maxspeed = 1_000_000, mode = 3) -> 'LIS3DH':
-        return LIS3DH(SPIBus(busnum, cs, maxspeed, mode))
+    def SPI(busnum, cs, maxspeed = 1_000_000, mode = 3, debug = False) -> 'LIS3DH':
+        return LIS3DH(SPIBus(busnum, cs, maxspeed, mode), debug)
 
     @staticmethod
-    def I2C(address) -> 'LIS3DH':
-        return LIS3DH(I2CBus(address))
+    def I2C(address, debug = False) -> 'LIS3DH':
+        return LIS3DH(I2CBus(address), debug)
 
     def _enable_axes(self, x = True, y = True, z = True):
         cfg = self._bus.read_register(0x20)
@@ -102,16 +102,21 @@ class LIS3DH(BaseSensor):
         latest_value = None
         while True:
             # if there's new data in the sensor, update latest value
-            if self._new_data_available():
-                #TODO: non-lowpower version
-                latest_value = self._read_sensors_lowpower()
+            # if self._new_data_available():
+            #     #TODO: non-lowpower version
+            latest_value = self._read_sensors_lowpower()
 
             # poll the pipe
             if pipe.poll():
                 message = pipe.recv()
+
+                if self.DEBUG:
+                    print(f"'{message}' signal received")
                 
                 # if pipe says "read", send out the data into the pipe
                 if message == "read":
+                    if self.DEBUG:
+                        print(f"Sending latest value '{latest_value}'...")
                     pipe.send(latest_value)
 
     @property

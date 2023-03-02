@@ -7,9 +7,10 @@ from multiprocessing.connection import Connection
 from ..bus import BaseBus
 
 class BaseSensor(ABC):
-    def __init__(self, bus: Type[BaseBus]) -> None:
+    def __init__(self, bus: Type[BaseBus], debug = False) -> None:
         self._external_pipe, self._internal_pipe = mp.Pipe(True)
         self._bus = bus
+        self.DEBUG = debug
     
     # @property
     # def _internal_pipe(self) -> Connection:
@@ -41,7 +42,13 @@ class BaseSensor(ABC):
         self._process.kill()
         
     def read(self):
+        if self.DEBUG:
+            print("Sending 'read' down the pipe...")
+
         self._external_pipe.send("read")
+        
+        if self.DEBUG:
+            print("Waiting for return from pipe...")
         
         return self._external_pipe.recv()
 
