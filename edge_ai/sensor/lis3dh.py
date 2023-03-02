@@ -23,8 +23,10 @@ class LIS3DH(BaseSensor):
         5376: 9
         }
 
-    def __init__(self, bus: Type[BaseBus], debug = False) -> None:
-        super().__init__(bus, debug)
+    # def __init__(self, bus: Type[BaseBus], debug = False) -> None:
+    def __init__(self, debug = False) -> None:
+        # super().__init__(bus, debug)
+        super().__init__(debug)
 
         self._lowpower = True
         self._scale = 2
