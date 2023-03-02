@@ -111,8 +111,8 @@ class LIS3DH(BaseSensor):
         # this is a loop that manages the running of the sensor.
 
         # Initialize Bus
-        bus = self._initialize_bus(busconfig)
-        bus.start()
+        self._bus = self._initialize_bus(busconfig)
+        self._bus.start()
         
         # Write any settings, config, etc
         self._setup()
