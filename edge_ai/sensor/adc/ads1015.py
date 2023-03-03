@@ -5,7 +5,7 @@ import multiprocessing as mp
 
 from multiprocessing.connection import Connection
 
-from . import BaseSensor
+from .. import BaseSensor
 
 class ADS1015(BaseSensor):
     # This currently uses the Adafruit ADS1x15 library.

@@ -2,7 +2,8 @@ import math
 import time
 import argparse
 
-from edge_ai.sensor import LIS3DH, ADS1015
+from edge_ai.sensor.accel import LIS3DH
+from edge_ai.sensor.adc import ADS1015
 
 def test_i2c_motion_sensor():
     pass
