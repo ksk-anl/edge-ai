@@ -7,33 +7,13 @@ from multiprocessing.connection import Connection
 from ..bus import BaseBus, SPIBus, I2CBus
 
 class BaseSensor(ABC):
-    # def __init__(self, bus: Type[BaseBus], debug = False) -> None:
     def __init__(self, debug = False) -> None:
         self._external_pipe, self._internal_pipe = mp.Pipe(True)
-        # self._bus = bus
+        self._bustype = None
+        self._busconfig = None
         self._running = False
         
         self.DEBUG = debug
-    
-    # @property
-    # def _internal_pipe(self) -> Connection:
-    #     return self.pipe_internal
-        
-    # @property
-    # def _external_pipe(self) -> Connection:
-    #     return self.pipe_external
-
-    # @property
-    # def _bus(self) -> Type[BaseBus]:
-    #     return self._bus
-    
-    # @_bus.setter
-    # def _bus(self):
-        
-        
-    # @property
-    # def _process(self) -> mp.Process:
-    #     return self._process
     
     def start(self):
         self._running = True
@@ -43,6 +23,7 @@ class BaseSensor(ABC):
     
     def stop(self):
         # close running process
+        self._running = False
         self._process.kill()
         
     def read(self):

@@ -13,7 +13,8 @@ import pandas as pd
 from psycopg2.extras import execute_batch
 from requests.auth import HTTPBasicAuth
 
-import edge_ai.sensor as sensors
+from edge_ai.sensor.accel import LIS3DH
+from edge_ai.sensor.adc import ADS1015
 
 TIMEFORMAT = '%Y-%m-%d %H:%M:%S.%f'
 OUTPUTFOLDER = 'output'
@@ -22,32 +23,35 @@ RDBACCESS = {
     'dbname': 'edge',
     'user'  :   'postgres',
     'password': 'postgres',
-    'host': '192.168.0.32',
+    'host': '192.168.0.38',
     'port': '5432'
 }
 DEVICE_ID = 1
 
 def main():
     
-    motionsensor = sensors.accel.LIS3DH.SPI(busnum = 0, cs = 0)
-    adc = sensors.adc.ADS1015()
+    motionsensor = LIS3DH.SPI(busnum = 0, cs = 0)
+    adc = ADS1015()
     
     # Setup sensors
     motionsensor.datarate = 5376
     motionsensor.enable_axes()
     motionsensor.start()
     
-    adc.start()
     THRESH = 2.5
+    adc.start()
+
     delta_t = 3
     
+    # Prepare output folder
     if not os.path.exists(OUTPUTFOLDER):
         os.mkdir(OUTPUTFOLDER)
         
-    
+    # Start the loop 
     while True:
         print('Waiting for blockage...')
-        
+
+
         while adc.read() < THRESH:
             pass
         
@@ -107,20 +111,20 @@ def main():
         
         # TEMP: send data directly to RTS
         
-        stddev = statistics.stdev(final.loc[:,'gravity'])
-        res = requests.post(RTSURL, json = {
-            'data': [ 
-                { 'gravity.std deviation' : stddev}
-                ]
-            },
-            auth = HTTPBasicAuth('demo_rts','demo_raspi')
-            )
+        # stddev = statistics.stdev(final.loc[:,'gravity'])
+        # res = requests.post(RTSURL, json = {
+        #     'data': [ 
+        #         { 'gravity.std deviation' : stddev}
+        #         ]
+        #     },
+        #     auth = HTTPBasicAuth('demo_rts','demo_raspi')
+        #     )
         
-        pred = res.json()['data'][0]['prediction(label)']
-        print(pred)
+        # pred = res.json()['data'][0]['prediction(label)']
+        # print(pred)
 
-        cursor.execute('INSERT INTO predictions (section_id, normal) VALUES (%s, %s);', (id, pred == 'normal'))
-        conn.commit()
+        # cursor.execute('INSERT INTO predictions (section_id, normal) VALUES (%s, %s);', (id, pred == 'normal'))
+        # conn.commit()
 
         cursor.close()
         conn.close()
