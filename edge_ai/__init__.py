@@ -1,2 +1,2 @@
-import bus
-import sensor
+from .bus import *
+from .sensor import *
