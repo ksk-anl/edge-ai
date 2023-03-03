@@ -30,7 +30,8 @@ def main():
     if not os.path.exists(OUTPUTFOLDER):
         os.mkdir(OUTPUTFOLDER)
     
-    while True:
+    # while True:
+    for _ in range(20):
         print('Waiting for blockage...')
         adc.run_until_detected()
         
