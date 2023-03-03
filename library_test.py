@@ -1,4 +1,5 @@
 import math
+import time
 import argparse
 
 from edge_ai.sensor import LIS3DH, ADS1015
@@ -32,6 +33,7 @@ def test_adc():
     print("Outputting ADC output, Ctrl + C to stop:")
     while True:
         print(f"{adc.read()} V")
+        time.sleep(0.1)
     
 def main():
     parser = argparse.ArgumentParser()
