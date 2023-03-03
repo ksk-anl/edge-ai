@@ -17,7 +17,7 @@ RDBACCESS = {
     'dbname': 'edge',
     'user'  :   'postgres',
     'password': 'postgres',
-    'host': '192.168.0.32',
+    'host': '192.168.0.38',
     'port': '5432'
 }
 DEVICE_ID = 1
@@ -82,20 +82,20 @@ def main():
         
         # TEMP: send data directly to RTS
         
-        stddev = statistics.stdev(final.loc[:,'gravity'])
-        res = requests.post(RTSURL, json = {
-            'data': [ 
-                { 'gravity.std deviation' : stddev}
-                ]
-            },
-            auth = HTTPBasicAuth('demo_rts','demo_raspi')
-            )
+        # stddev = statistics.stdev(final.loc[:,'gravity'])
+        # res = requests.post(RTSURL, json = {
+        #     'data': [ 
+        #         { 'gravity.std deviation' : stddev}
+        #         ]
+        #     },
+        #     auth = HTTPBasicAuth('demo_rts','demo_raspi')
+        #     )
         
-        pred = res.json()['data'][0]['prediction(label)']
-        print(pred)
+        # pred = res.json()['data'][0]['prediction(label)']
+        # print(pred)
 
-        cursor.execute('INSERT INTO predictions (section_id, normal) VALUES (%s, %s);', (id, pred == 'normal'))
-        conn.commit()
+        # cursor.execute('INSERT INTO predictions (section_id, normal) VALUES (%s, %s);', (id, pred == 'normal'))
+        # conn.commit()
 
         cursor.close()
         conn.close()
