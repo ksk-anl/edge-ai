@@ -53,6 +53,7 @@ def main():
 
 
         while adc.read() < THRESH:
+            time.sleep(0.1)
             pass
         
         time.sleep(0.25)
