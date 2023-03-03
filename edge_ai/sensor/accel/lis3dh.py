@@ -2,7 +2,7 @@ import multiprocessing as mp
 
 from multiprocessing.connection import Connection
 
-from . import BaseSensor
+from .. import BaseSensor
 
 class LIS3DH(BaseSensor):
     DATARATES = {
