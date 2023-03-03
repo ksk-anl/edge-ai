@@ -36,7 +36,7 @@ def main():
     # Setup sensors
     motionsensor.datarate = 5376
     motionsensor.enable_axes()
-    motionsensor.start()
+    # motionsensor.start()
     
     THRESH = 2.5
     adc.start()
@@ -52,9 +52,13 @@ def main():
         print('Waiting for blockage...')
 
 
-        while adc.read() < THRESH:
+        while True:
             time.sleep(0.1)
-            pass
+            val = adc.read()
+            if val > THRESH:
+                break
+        adc.stop()
+        motionsensor.start()
         
         time.sleep(0.25)
         
@@ -129,6 +133,9 @@ def main():
 
         cursor.close()
         conn.close()
+        
+        motionsensor.stop()
+        adc.start()
         # success = True
         
         # # if successful, delete the csv
