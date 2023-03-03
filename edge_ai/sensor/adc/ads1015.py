@@ -28,7 +28,7 @@ class ADS1015(BaseSensor):
         self._adc = Adafruit_ADS1x15.ADS1015(address = self._address, 
                                              busnum = self._busnum)
 
-        time.sleep(0.5)
+        # time.sleep(0.5)
         diff = 0
         while True:
             # poll the pipe
