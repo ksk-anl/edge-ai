@@ -36,11 +36,23 @@ def test_adc():
         print(f"{adc.read()} V")
         time.sleep(0.1)
     
+def adc_ping_when_above_thresh():
+    adc = ADS1015()
+    adc.start()
+    THRESH = 2.5
+    
+    print("Outputting ADC output, Ctrl + C to stop:")
+    while True:
+        if adc.read() > THRESH:
+            print(f"Found data above {THRESH} V!")
+        time.sleep(0.1)
+    
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('mode', 
-                        choices=['1', '2', '3'],
-                        help= 'Choose a mode/sensor to test: 1: i2c motionsensor, 2: spi motionsensor, 3: ADC (analog sensor)')
+                        choices=['1', '2', '3', '4'],
+                        help= 'Choose a mode/sensor to test: 1: i2c motionsensor, 2: spi motionsensor, 3: ADC (analog sensor), 4: ADC ping when above 2.5')
     
     args = parser.parse_args()
     
@@ -50,6 +62,8 @@ def main():
         test_spi_motion_sensor()
     elif args.mode == '3':
         test_adc()
+    elif args.mode == '4':
+        adc_ping_when_above_thresh()
 
 if __name__ == '__main__':
     main()

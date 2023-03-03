@@ -1,8 +1,10 @@
-import sensors
+# import sensors
 import os
 import psycopg2
 import requests
 import time
+import datetime
+import math
 
 import statistics
 
@@ -11,6 +13,9 @@ import pandas as pd
 from psycopg2.extras import execute_batch
 from requests.auth import HTTPBasicAuth
 
+import edge_ai.sensor as sensors
+
+TIMEFORMAT = '%Y-%m-%d %H:%M:%S.%f'
 OUTPUTFOLDER = 'output'
 RTSURL = 'http://ec2-52-194-91-137.ap-northeast-1.compute.amazonaws.com/rts/api/v1/services/db_test/write_predictions'
 RDBACCESS = {
@@ -24,20 +29,40 @@ DEVICE_ID = 1
 
 def main():
     
-    motionsensor = sensors.LIS3DH_SPI(busnum = 0, cs = 0)
-    adc = sensors.LightSensor()
+    motionsensor = sensors.accel.LIS3DH.SPI(busnum = 0, cs = 0)
+    adc = sensors.adc.ADS1015()
+    
+    # Setup sensors
+    motionsensor.datarate = 5376
+    motionsensor.enable_axes()
+    motionsensor.start()
+    
+    adc.start()
+    THRESH = 2.5
+    delta_t = 3
     
     if not os.path.exists(OUTPUTFOLDER):
         os.mkdir(OUTPUTFOLDER)
+        
     
     while True:
         print('Waiting for blockage...')
-        adc.run_until_detected()
+        
+        while adc.read() < THRESH:
+            pass
         
         time.sleep(0.25)
         
-        out = motionsensor.run_for(3)
-        print(f'Recorded {len(out)} lines!')
+        results = []
+
+        time_end = time.time() + delta_t
+        while time.time() <= time_end:
+            values = motionsensor.read()
+            final_value = math.sqrt(sum([x**2 for x in values]))
+
+            results.append([f'{datetime.datetime.now():{TIMEFORMAT}}',final_value])
+            
+        print(f'Recorded {len(results)} lines!')
 
         
         # TODO: RDB stuff
@@ -46,7 +71,7 @@ def main():
         cursor = conn.cursor()
 
         # write to section table, get section id
-        cursor.execute('INSERT INTO sections (device_id, start_time) VALUES (%s, %s) RETURNING id;', (DEVICE_ID, out[0][0]))
+        cursor.execute('INSERT INTO sections (device_id, start_time) VALUES (%s, %s) RETURNING id;', (DEVICE_ID, results[0][0]))
         conn.commit()
 
         print("Wrote to sections table...")
@@ -55,9 +80,9 @@ def main():
         # print(id)
 
         # # write csv
-        final = pd.DataFrame(data = {'section_id' : [id] * len(out),
-                                     'time'       : [row[0] for row in out], 
-                                     'gravity'    : [row[1] for row in out]})
+        final = pd.DataFrame(data = {'section_id' : [id] * len(results),
+                                     'time'       : [row[0] for row in results], 
+                                     'gravity'    : [row[1] for row in results]})
         
         # filename = out[0][0]#.split('.')[0] # get only the whole number part
         
