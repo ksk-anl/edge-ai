@@ -15,13 +15,13 @@ class SPIBus(BaseBus):
         self.spi.max_speed_hz = self.maxspeed
         self.spi.mode = self.mode
         
-    def read_register(self, address):
-        to_read = [address | 0x80, 0x00]
+    def read_register(self, register):
+        to_read = [register | 0x80, 0x00]
         
         return self.spi.xfer2(to_read)[1]
     
-    def write_register(self, address, value):
-        to_write = [address, value]
+    def write_register(self, register, value):
+        to_write = [register, value]
         
         self.spi.xfer2(to_write)
     

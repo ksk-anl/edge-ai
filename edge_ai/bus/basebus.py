@@ -9,9 +9,9 @@ class BaseBus(ABC):
         ...
         
     @abstractmethod
-    def read_register(self, address):
+    def read_register(self, register):
         ...
 
     @abstractmethod
-    def write_register(self, address, value):
+    def write_register(self, register, value):
         ...
