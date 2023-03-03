@@ -45,4 +45,6 @@ class ADS1015(BaseSensor):
                     pipe.send(diff)
 
             diff = self._adc.read_adc_difference(0, gain = self._adc_gain)
+
+            #TODO: Generalize this
             diff = diff*4.096*2/4096
