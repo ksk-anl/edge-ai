@@ -382,6 +382,7 @@ class LightSensor(Sensor):
         while diff < self.THRESH:
             diff = self.adc.read_adc_difference(0, gain = self.ADC_GAIN)
             diff = diff*4.096*2/4096
+            print(diff)
             time.sleep(0.1)
         # ends when it goes above the threshold
     
