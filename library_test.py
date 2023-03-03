@@ -8,8 +8,9 @@ def main():
     motionsensor.datarate = 5376
     motionsensor.enable_axes()
     motionsensor.selftest('low')
+
     motionsensor.start()
-    
+
     for _ in range(200):
         values = motionsensor.read()
         

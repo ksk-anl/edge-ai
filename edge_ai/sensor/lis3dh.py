@@ -1,13 +1,8 @@
-import spidev
-import smbus2
-
 import multiprocessing as mp
 
-from typing import Tuple
 from multiprocessing.connection import Connection
 
 from . import BaseSensor
-from ..bus import BaseBus, SPIBus, I2CBus
 
 class LIS3DH(BaseSensor):
     DATARATES = {
