@@ -72,7 +72,8 @@ def main():
                       """
                       INSERT into gravities (section_id, time, gravity) values (%s, %s, %s)
                       """,
-                      [tuple(row) for row in final.to_numpy()])
+                      [tuple(row) for row in final.to_numpy()],
+                      page_size = 1000)
         # with open(filepath, 'r') as f:
         #     conn.copy_from(f, 'gravities', sep = ',')
         conn.commit()
