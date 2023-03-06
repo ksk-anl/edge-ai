@@ -72,7 +72,7 @@ def adc_triggers_motionsensor():
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('mode', 
-                        choices=['1', '2', '3', '4'],
+                        choices=['1', '2', '3', '4', '5'],
                         help= 'Choose a mode/sensor to test: 1: i2c motionsensor, 2: spi motionsensor, 3: ADC (analog sensor), 4: ADC ping when above 2.5')
     
     args = parser.parse_args()
