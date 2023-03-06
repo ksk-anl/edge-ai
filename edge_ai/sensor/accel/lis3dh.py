@@ -1,8 +1,10 @@
 import multiprocessing as mp
 
+from typing import Type
 from multiprocessing.connection import Connection
 
 from .. import BaseSensor
+from ...bus import BaseBus, I2CBus, SPIBus
 
 class LIS3DH(BaseSensor):
     DATARATES = {
@@ -18,10 +20,10 @@ class LIS3DH(BaseSensor):
         5376: 9
         }
 
-    # def __init__(self, bus: Type[BaseBus], debug = False) -> None:
-    def __init__(self, debug = False) -> None:
-        # super().__init__(bus, debug)
-        super().__init__(debug)
+    def __init__(self, bus: Type[BaseBus], debug = False) -> None:
+    # def __init__(self, debug = False) -> None:
+        super().__init__(bus, debug)
+        # super().__init__(debug)
 
         # defaults
         self._lowpower = True
@@ -32,26 +34,13 @@ class LIS3DH(BaseSensor):
         
     @staticmethod
     def SPI(busnum, cs, maxspeed = 1_000_000, mode = 3, debug = False) -> 'LIS3DH':
-        sensor = LIS3DH(debug)
-        sensor._bustype = 'spi'
-        sensor._busconfig = {
-            'busnum' : busnum,
-            'cs' : cs,
-            'maxspeed' : maxspeed,
-            'mode' : mode,
-            'debug' : debug
-        }
-        return sensor
+        bus = SPIBus(busnum, cs, maxspeed, mode, debug)
+        return LIS3DH(bus, debug)
 
     @staticmethod
-    def I2C(address, debug = False) -> 'LIS3DH':
-        sensor = LIS3DH(debug)
-        sensor._bustype = 'i2c'
-        sensor._busconfig = {
-            'address' : address,
-            'debug' : debug
-        }
-        return sensor
+    def I2C(address, busnum, debug = False) -> 'LIS3DH':
+        bus = I2CBus(address, busnum, debug)
+        return LIS3DH(bus, debug)
 
     def _enable_axes(self, x = True, y = True, z = True):
         cfg = self._bus.read_register(0x20)
@@ -143,38 +132,10 @@ class LIS3DH(BaseSensor):
 
         return float(value) / ((max_val/2)/self._scale)
 
-    def _internal_loop(self, pipe: Connection):
-        # this is a loop that manages the running of the sensor.
-
-        # Initialize Bus
-        self._bus = self._initialize_bus(self._bustype, self._busconfig)
-        self._bus.start()
-        
-        # Write any settings, config, etc
-        self._setup()
-        
-        latest_value = None
-        while True:
-            # if there's new data in the sensor, update latest value
-            if self._new_data_available():
-                #TODO: non-lowpower version
-                raw_values = self._read_sensors_lowpower()
-                latest_value = [self._convert_to_gs(value) for value in raw_values]
-
-            # poll the pipe
-            if pipe.poll():
-                message = pipe.recv()
-
-                if self.DEBUG:
-                    print(f"'{message}' signal received")
-                
-                # if pipe says "read", send out the data into the pipe
-                if message == "read":
-                    
-                    if self.DEBUG:
-                        print(f"Sending latest value '{latest_value}'...")
-                    
-                    pipe.send(latest_value)
+    def read(self):
+        # TODO: generalize this to other resolutions
+        raw_values = self._read_sensors_lowpower()
+        return [self._convert_to_gs(value) for value in raw_values]
 
     @property
     def datarate(self):

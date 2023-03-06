@@ -9,6 +9,9 @@ class I2CBus(BaseBus):
         
     def start(self):
         self.i2c = smbus2.SMBus(self._busnum)
+
+    def stop(self):
+        self.i2c.close()
         
     def write_register(self, register, value):
         self.i2c.write_byte_data(self._address, register, value)
