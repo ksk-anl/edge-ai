@@ -219,4 +219,4 @@ class LIS3DH(BaseSensor):
         self._selftest = test
 
     def _calibrate(self):
-       self._offsets = self.read()
+       self._offsets = self._read_sensors_lowpower()
