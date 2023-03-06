@@ -104,12 +104,19 @@ class LIS3DH(BaseSensor):
 
         self._bus.write_register(0x23, cfg)
 
+    def _enable_highpass(self):
+        cfg = self._bus.read_register(0x21)
+        
+        cfg |= 0b10000000
+        
+        self._bus.write_register(0x21, cfg)
+
     def _setup(self):
         #TODO: setter and config for scale
         self._enable_axes(self.x, self.y, self.z)
         self._set_datarate(self._datarate)
         self._set_selftest(self._selftest)
-        self._calibrate()
+        self._enable_highpass()
 
     def _read_sensors_lowpower(self):
         x = self._bus.read_register(0x29)
@@ -149,8 +156,7 @@ class LIS3DH(BaseSensor):
             if self._new_data_available():
                 #TODO: non-lowpower version
                 raw_values = self._read_sensors_lowpower()
-                offset_removed = [raw - offset for raw, offset in zip(raw_values, self._offsets)]
-                latest_value = [self._convert_to_gs(value) for value in offset_removed]
+                latest_value = [self._convert_to_gs(value) for value in raw_values]
 
             # poll the pipe
             if pipe.poll():
@@ -217,6 +223,3 @@ class LIS3DH(BaseSensor):
     
     def selftest(self, test = None):
         self._selftest = test
-
-    def _calibrate(self):
-       self._offsets = self._read_sensors_lowpower()
