@@ -64,7 +64,7 @@ def adc_triggers_motionsensor():
     while True:
         print("Waiting for ADC to go high before recording motion...")
         
-        if adc.read > THRESH:
+        if adc.read() > THRESH:
             print(f'Detected high ADC! motionsensor reading: {motionsensor.read()}')
 
         time.sleep(0.1)
