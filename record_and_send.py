@@ -5,6 +5,7 @@ import requests
 import time
 import datetime
 import math
+import io
 
 import statistics
 
@@ -46,9 +47,9 @@ def main():
     # Prepare output folder
     if not os.path.exists(OUTPUTFOLDER):
         os.mkdir(OUTPUTFOLDER)
-        
-    # Start the loop 
-    while True:
+    
+    # while True:
+    for _ in range(20):
         print('Waiting for blockage...')
 
 
@@ -97,17 +98,20 @@ def main():
         
         # filepath = f'{OUTPUTFOLDER}/{filename}.csv'
         
-        # final.to_csv(filepath)
+        outfile = io.StringIO()
+        
+        final.to_csv(outfile, header = False, index = False)
         
         # print(final.head)
         # write data to gravity table
-        execute_batch(cursor,
-                      """
-                      INSERT into gravities (section_id, time, gravity) values (%s, %s, %s)
-                      """,
-                      [tuple(row) for row in final.to_numpy()])
-        # with open(filepath, 'r') as f:
-        #     conn.copy_from(f, 'gravities', sep = ',')
+        # execute_batch(cursor,
+        #               """
+        #               INSERT into gravities (section_id, time, gravity) values (%s, %s, %s)
+        #               """,
+        #               [tuple(row) for row in final.to_numpy()],
+        #               page_size = 1000)
+        outfile.seek(0)
+        cursor.copy_from(outfile, 'gravities', sep = ',')
         conn.commit()
         
         print("Finished Sending to RDB")
