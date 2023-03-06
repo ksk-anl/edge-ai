@@ -28,6 +28,7 @@ class LIS3DH(BaseSensor):
         self._scale = 2
         self._datarate = 5376
         self._selftest = None
+        self._highpass = False
         
     @staticmethod
     def SPI(busnum, cs, maxspeed = 1_000_000, mode = 3, debug = False) -> 'LIS3DH':
