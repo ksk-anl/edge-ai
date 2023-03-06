@@ -137,7 +137,7 @@ class LIS3DH(BaseSensor):
         if self._lowpower:
             BITS = 8
             
-        max_val = 2**8
+        max_val = 2**BITS
         if value > max_val/2.:
             value -= max_val
 
@@ -193,6 +193,7 @@ class LIS3DH(BaseSensor):
 
     @scale.setter
     def scale(self, value):
+        # TODO: allow only valid sscales (2,4,8,16)
         self._scale = value
         
     @property
