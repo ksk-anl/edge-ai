@@ -150,7 +150,7 @@ class LIS3DH(BaseSensor):
                 #TODO: non-lowpower version
                 raw_values = self._read_sensors_lowpower()
                 offset_removed = [raw - offset for raw, offset in zip(raw_values, self._offsets)]
-                latest_value = [self._convert_to_gs(value) for value in raw_values]
+                latest_value = [self._convert_to_gs(value) for value in offset_removed]
 
             # poll the pipe
             if pipe.poll():
