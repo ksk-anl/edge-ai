@@ -9,7 +9,7 @@ def test_i2c_motion_sensor():
     pass
 
 def test_spi_motion_sensor():
-    print("Testing Motion Sensor Values: (reading 200 values)")
+    print("Testing Motion Sensor Values:")
     motionsensor = LIS3DH.SPI(0, 0)
     motionsensor.datarate = 5376
     motionsensor.enable_axes()
@@ -17,12 +17,15 @@ def test_spi_motion_sensor():
 
     motionsensor.start()
 
-    for _ in range(200):
+    while True:
+    # for _ in range(200):
         values = motionsensor.read()
         
         final_value = math.sqrt(sum([x**2 for x in values]))
         
         print(final_value)
+        
+        time.sleep(0.1)
     
     print("Finished recording")
     motionsensor.stop()
@@ -47,6 +50,24 @@ def adc_ping_when_above_thresh():
             print(f"Found data above {THRESH} V!")
         time.sleep(0.1)
     
+def adc_triggers_motionsensor():
+    motionsensor = LIS3DH.SPI(0, 0)
+    motionsensor.datarate = 5376
+    motionsensor.enable_axes()
+
+    adc = ADS1015()
+
+    motionsensor.start()
+    adc.start()
+    THRESH = 2.5
+    
+    while True:
+        print("Waiting for ADC to go high before recording motion...")
+        
+        if adc.read > THRESH:
+            print(f'Detected high ADC! motionsensor reading: {motionsensor.read()}')
+
+        time.sleep(0.1)
 
 def main():
     parser = argparse.ArgumentParser()
@@ -64,6 +85,8 @@ def main():
         test_adc()
     elif args.mode == '4':
         adc_ping_when_above_thresh()
+    elif args.mode == '5':
+        adc_triggers_motionsensor()
 
 if __name__ == '__main__':
     main()
