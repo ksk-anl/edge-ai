@@ -107,7 +107,7 @@ class LIS3DH(BaseSensor):
     def _enable_highpass(self):
         cfg = self._bus.read_register(0x21)
         
-        cfg |= 0b10111000
+        cfg |= 0b10001000
         
         self._bus.write_register(0x21, cfg)
 
