@@ -105,6 +105,9 @@ class LIS3DH(BaseSensor):
         self._bus.write_register(0x23, cfg)
 
     def _enable_highpass(self):
+        if not self._enable_highpass:
+            return
+
         cfg = self._bus.read_register(0x21)
         
         cfg |= 0b10001000
@@ -223,3 +226,6 @@ class LIS3DH(BaseSensor):
     
     def selftest(self, test = None):
         self._selftest = test
+        
+    def highpass(self, enable = False):
+        self._highpass = enable
