@@ -23,7 +23,7 @@ def test_spi_motion_sensor():
         
         final_value = math.sqrt(sum([x**2 for x in values]))
         
-        print(f'{[f"{val:03d}" for val in values]}: {final_value}')
+        print(f'{values}: {final_value}')
         
         time.sleep(0.1)
     
