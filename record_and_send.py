@@ -48,6 +48,8 @@ def main():
     if not os.path.exists(OUTPUTFOLDER):
         os.mkdir(OUTPUTFOLDER)
     
+    conn = psycopg2.connect(**RDBACCESS)
+
     # while True:
     for _ in range(20):
         print('Waiting for blockage...')
@@ -75,9 +77,7 @@ def main():
         print(f'Recorded {len(results)} lines!')
 
         
-        # TODO: RDB stuff
         # try to send to RDB/RTS
-        conn = psycopg2.connect(**RDBACCESS)
         cursor = conn.cursor()
 
         # write to section table, get section id
@@ -102,45 +102,15 @@ def main():
         
         final.to_csv(outfile, header = False, index = False)
         
-        # print(final.head)
-        # write data to gravity table
-        # execute_batch(cursor,
-        #               """
-        #               INSERT into gravities (section_id, time, gravity) values (%s, %s, %s)
-        #               """,
-        #               [tuple(row) for row in final.to_numpy()],
-        #               page_size = 1000)
+        # write data to gravities table
         outfile.seek(0)
         cursor.copy_from(outfile, 'gravities', sep = ',')
         conn.commit()
         
         print("Finished Sending to RDB")
-        
-        # send id to RTS/server
-        
-        # TEMP: send data directly to RTS
-        
-        # stddev = statistics.stdev(final.loc[:,'gravity'])
-        # res = requests.post(RTSURL, json = {
-        #     'data': [ 
-        #         { 'gravity.std deviation' : stddev}
-        #         ]
-        #     },
-        #     auth = HTTPBasicAuth('demo_rts','demo_raspi')
-        #     )
-        
-        # pred = res.json()['data'][0]['prediction(label)']
-        # print(pred)
-
-        # cursor.execute('INSERT INTO predictions (section_id, normal) VALUES (%s, %s);', (id, pred == 'normal'))
-        # conn.commit()
 
         cursor.close()
-        conn.close()
-        
-        # motionsensor.stop()
-        # adc.start()
-        # success = True
+        # conn.close()
         
         # # if successful, delete the csv
         # if success:
