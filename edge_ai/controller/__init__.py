@@ -1,1 +1,1 @@
-import lis3dh
+from .lis3dh import LIS3DH

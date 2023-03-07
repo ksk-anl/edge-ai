@@ -73,7 +73,7 @@ def adc_triggers_motionsensor():
         time.sleep(0.1)
 
 def test_motionsensor_controller():
-    motioncontrol = controller.lis3dh.LIS3DH.SPI(0, 0)
+    motioncontrol = controller.LIS3DH.SPI(0, 0)
     motioncontrol.start()
 
     while True:
