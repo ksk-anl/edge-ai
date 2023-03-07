@@ -6,14 +6,15 @@ from multiprocessing.connection import Connection
 
 from ..bus import BaseBus
 
-def check_if_running(f):
-    def inner(self, *args, **kwargs):
-        if not self._running:
-            raise Exception(f"The sensor ({self.__class__.__name__}) has not been started.")
-        f(*args, **kwargs)
-    return inner
 
 class BaseSensor(ABC):
+    def check_if_running(f):
+        def inner(self, *args, **kwargs):
+            if not self._running:
+                raise Exception(f"The sensor ({self.__class__.__name__}) has not been started.")
+            f(*args, **kwargs)
+        return inner
+    
     def __init__(self, bus: Type[BaseBus], debug = False) -> None:
         self._bus = bus
         self._running = False
