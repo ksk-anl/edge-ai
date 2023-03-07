@@ -99,14 +99,15 @@ class LIS3DH(BaseSensor):
     
         self._bus.write_register(0x23, cfg)
         
-    def set_selftest(self, selftest = None):
+    def set_selftest(self, selftest = 'high'):
+        if selftest is None:
+            return
+        
         cfg = self._bus.read_register(0x23)
         
         cfg &= 0b001
         
-        if selftest is None:
-            pass
-        elif selftest == 'high':
+        if selftest == 'high':
             cfg |= 0b100
         elif selftest == 'low':
             cfg |= 0b010
