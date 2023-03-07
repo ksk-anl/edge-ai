@@ -56,11 +56,11 @@ def adc_ping_when_above_thresh():
         time.sleep(0.1)
     
 def adc_triggers_motionsensor():
-    motionsensor = LIS3DH.SPI(0, 0)
-    motionsensor.datarate = 5376
-    motionsensor.enable_axes()
+    motionsensor = controller.accel.LIS3DH.SPI(0, 0)
+    # motionsensor.set_datarate(5376)
+    # motionsensor.enable_axes()
 
-    adc = ADS1015()
+    adc = controller.adc.ADS1015()
 
     motionsensor.start()
     adc.start()
