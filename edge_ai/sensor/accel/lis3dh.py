@@ -1,7 +1,4 @@
-import multiprocessing as mp
-
 from typing import Type
-from multiprocessing.connection import Connection
 
 from ..basesensor import BaseSensor
 from ...bus import BaseBus, I2CBus, SPIBus

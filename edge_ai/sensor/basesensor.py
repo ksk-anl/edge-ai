@@ -2,7 +2,6 @@ import multiprocessing as mp
 
 from typing import Type
 from abc import ABC, abstractmethod
-from multiprocessing.connection import Connection
 
 from ..bus import BaseBus
 

@@ -2,7 +2,7 @@ import math
 import time
 import argparse
 
-import edge_ai.controller as controller
+import edge_ai.controller.accel as accel
 
 # from edge_ai.sensor import LIS3DH
 from edge_ai.sensor.accel import LIS3DH
@@ -73,7 +73,7 @@ def adc_triggers_motionsensor():
         time.sleep(0.1)
 
 def test_motionsensor_controller():
-    motioncontrol = controller.LIS3DH.SPI(0, 0)
+    motioncontrol = accel.LIS3DH.SPI(0, 0)
     motioncontrol.start()
 
     while True:

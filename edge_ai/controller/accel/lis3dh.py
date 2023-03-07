@@ -1,7 +1,7 @@
 from multiprocessing.connection import Connection
 
 import edge_ai.sensor as sensor
-from .basecontroller import BaseController
+from ..basecontroller import BaseController
 
 class LIS3DH(BaseController):
     def __init__(self, mode, debug = False) -> None:

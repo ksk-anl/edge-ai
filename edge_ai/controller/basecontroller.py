@@ -1,10 +1,7 @@
 import multiprocessing as mp
 
 from abc import ABC, abstractmethod
-from typing import Type
 from multiprocessing.connection import Connection
-
-from ..sensor import BaseSensor
 
 class BaseController(ABC):
     """

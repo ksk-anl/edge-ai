@@ -1,1 +1,3 @@
-from .lis3dh import LIS3DH
+from . import accel
+
+from .basecontroller import BaseController
