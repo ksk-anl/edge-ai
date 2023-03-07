@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 from typing import Type
 
 from ..basesensor import BaseSensor
-from ...bus import BaseBus, I2C, SPIBus
+from ...bus import BaseBus, I2C, SPI
 
 class LIS3DH(BaseSensor):
     DATARATES = {
@@ -12,17 +14,16 @@ class LIS3DH(BaseSensor):
         100:  5,
         200:  6,
         400:  7,
-        1600: 8,
         1344: 9,
+        1620: 8,
         5376: 9
         }
 
-    def __init__(self, bus: Type[BaseBus], debug = False) -> None:
-    # def __init__(self, debug = False) -> None:
-        super().__init__(bus, debug)
-        # super().__init__(debug)
+    def __init__(self, bus: Type[BaseBus]) -> None:
+        super().__init__(bus)
 
         # defaults
+        self._resolution = 'low'
         self._lowpower = True
         self._scale = 2
         self._datarate = 5376
@@ -30,19 +31,20 @@ class LIS3DH(BaseSensor):
         self._highpass = False
         
     @staticmethod
-    def SPI(busnum, cs, maxspeed = 1_000_000, mode = 3, debug = False) -> 'LIS3DH':
-        bus = SPIBus(busnum, cs, maxspeed, mode, debug)
-        return LIS3DH(bus, debug)
+    def SPI(busnum, cs, maxspeed = 1_000_000, mode = 3) -> LIS3DH:
+        bus = SPI(busnum, cs, maxspeed, mode)
+        return LIS3DH(bus)
 
     @staticmethod
-    def I2C(address, busnum, debug = False) -> 'LIS3DH':
-        bus = I2C(address, busnum, debug)
-        return LIS3DH(bus, debug)
+    def I2C(address, busnum) -> LIS3DH:
+        bus = I2C(address, busnum)
+        return LIS3DH(bus)
 
     def set_datarate(self, datarate):
         #TODO: Make datarate and lowpower settings more robust
         if datarate not in self.DATARATES.keys():
-            raise "Data Rate must be one of: 1, 10, 25, 50, 100, 200, 400, 1600, 1344, 5376Hz"
+            valid_rates = [str(rate) for rate in self.DATARATES.keys()]
+            raise Exception(f"Data Rate must be one of: {', '.join(valid_rates)}Hz")
 
         cfg = self._bus.read_register(0x20)
         
@@ -50,39 +52,62 @@ class LIS3DH(BaseSensor):
 
         self._bus.write_register(0x20, cfg)
         
-        if (datarate == 1600) | (datarate == 5376):
+        if (datarate == 1620) | (datarate == 5376):
             self.set_lowpower(True)
 
-    def set_lowpower(self, lowpower = False):
-        self._lowpower = lowpower
+    def set_resolution(self, resolution):
+        valid_resolutions = ['low', 'normal', 'high']
+        if resolution not in valid_resolutions:
+            raise Exception(f'Mode must be one of {", ".join(valid_resolutions)}')
+
+        self._resolution = resolution
+
+        if resolution == 'low':
+            LPen_bit = True
+            HR_bit = False
+        elif resolution == 'high':
+            LPen_bit = False
+            HR_bit = True
+        else:
+            LPen_bit = False
+            HR_bit = False
+
         cfg = self._bus.read_register(0x20)
         
-        # set LPen bit on register 20 to either on or off
-        if lowpower:
-            cfg |= 0b00001000
+        if LPen_bit:
+            cfg |= 0b00001000 # set LPen bit on register 20 to on
         else:
-            cfg &= 0b11110111
-        
+            cfg &= 0b11110111 # set LPen bit on register 20 to off
+    
         self._bus.write_register(0x20, cfg)
+
+        cfg = self._bus.read_register(0x23)
         
-    def set_selftest(self, selftest_mode = None):
+        if HR_bit:
+            cfg |= 0b00000100 # set HR bit on register 23 to on
+        else:
+            cfg &= 0b11111011 # set HR bit on register 23 to off
+    
+        self._bus.write_register(0x23, cfg)
+        
+    def set_selftest(self, selftest = None):
         cfg = self._bus.read_register(0x23)
         
         cfg &= 0b001
         
-        if selftest_mode is None:
+        if selftest is None:
             pass
-        elif selftest_mode == 'high':
+        elif selftest == 'high':
             cfg |= 0b100
-        elif selftest_mode == 'low':
+        elif selftest == 'low':
             cfg |= 0b010
 
         self._bus.write_register(0x23, cfg)
 
-    def enable_highpass(self, highpass_on = False):
+    def enable_highpass(self, highpass = True):
         cfg = self._bus.read_register(0x21)
         
-        if highpass_on:
+        if highpass:
             cfg |= 0b10001000
         else:
             cfg &= 0b00000111
@@ -101,9 +126,10 @@ class LIS3DH(BaseSensor):
             
         self._bus.write_register(0x20, cfg)
 
+
     def read(self):
         # TODO: generalize this to other resolutions
-        raw_values = self._read_sensors_lowpower()
+        raw_values = self._read_sensors()
         return [self._convert_to_gs(value) for value in raw_values]
 
     def new_data_available(self) -> bool:
@@ -111,19 +137,37 @@ class LIS3DH(BaseSensor):
         status = (status >> 3) & 1
         return status
 
-    def _read_sensors_lowpower(self):
+    def _read_sensors(self):
         x = self._bus.read_register(0x29)
         y = self._bus.read_register(0x2B)
         z = self._bus.read_register(0x2D)
+
+        if self._resolution != 'low':
+            xl = self._bus.read_register(0x28)
+            yl = self._bus.read_register(0x2A)
+            zl = self._bus.read_register(0x2C)
+
+            if self._resolution == 'high':
+                x = (x << 8 | xl) >> 4
+                y = (y << 8 | yl) >> 4
+                z = (z << 8 | zl) >> 4
+            elif self._resolution == 'normal':
+                x = (x << 8 | xl) >> 6
+                y = (y << 8 | yl) >> 6
+                z = (z << 8 | zl) >> 6
         
         return (x, y ,z)
 
     def _convert_to_gs(self, value) -> float:
-        if self._lowpower:
-            BITS = 8
+        if self._resolution == 'low':
+            bits = 8
+        elif self._resolution == 'normal':
+            bits = 10
+        elif self._resolution == 'high':
+            bits = 12
             
-        max_val = 2**BITS
-        if value > max_val/2.:
+        max_val = 2**bits
+        if value > max_val / 2.:
             value -= max_val
 
-        return float(value) / ((max_val/2)/self._scale)
+        return float(value) / ((max_val / 2 ) / self._scale)

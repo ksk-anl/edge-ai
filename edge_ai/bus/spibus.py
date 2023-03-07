@@ -2,8 +2,8 @@ import spidev
 
 from .basebus import BaseBus
 
-class SPIBus(BaseBus):
-    def __init__(self, busnum, cs, maxspeed = 1_000_000, mode = 3, debug = False):
+class SPI(BaseBus):
+    def __init__(self, busnum, cs, maxspeed = 1_000_000, mode = 3):
         self._busnum = busnum
         self._cs = cs
         self._maxspeed = maxspeed

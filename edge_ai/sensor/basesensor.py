@@ -1,5 +1,3 @@
-import multiprocessing as mp
-
 from typing import Type
 from abc import ABC, abstractmethod
 
@@ -7,11 +5,10 @@ from ..bus import BaseBus
 
 
 class BaseSensor(ABC):
-    def __init__(self, bus: Type[BaseBus], debug = False) -> None:
+    def __init__(self, bus: Type[BaseBus]) -> None:
         self._bus = bus
         self._running = False
 
-        self.DEBUG = debug
         self.start()
     
     def start(self):

@@ -1,9 +1,6 @@
 from abc import ABC, abstractmethod
 
 class BaseBus(ABC):
-    def __init__(self):
-        ...
-        
     @abstractmethod
     def start(self):
         ...
