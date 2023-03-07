@@ -24,7 +24,6 @@ class LIS3DH(BaseSensor):
 
         # defaults
         self._resolution = 'low'
-        self._lowpower = True
         self._scale = 2
         self._datarate = 5376
         self._selftest = None
@@ -40,11 +39,23 @@ class LIS3DH(BaseSensor):
         bus = I2C(address, busnum)
         return LIS3DH(bus)
 
+    def set_scale(self, scale):
+        valid_scales = [2, 4, 8, 16]
+
+        if scale not in valid_scales:
+            raise Exception(f"Scale must be one of: {', '.join([str(scale) for scale in valid_scales])}")
+
     def set_datarate(self, datarate):
-        #TODO: Make datarate and lowpower settings more robust
         if datarate not in self.DATARATES.keys():
             valid_rates = [str(rate) for rate in self.DATARATES.keys()]
             raise Exception(f"Data Rate must be one of: {', '.join(valid_rates)}Hz")
+
+        if (datarate == 1620) | (datarate == 5376):
+            if self._resolution != 'low':
+                raise Exception("1620Hz and 5376Hz mode only allowed on Low Power mode")
+        
+        if datarate == 1344 & self._resolution == 'low':
+            raise Exception("1344Hz mode not allowed on Low Power mode")
 
         cfg = self._bus.read_register(0x20)
         
@@ -52,8 +63,6 @@ class LIS3DH(BaseSensor):
 
         self._bus.write_register(0x20, cfg)
         
-        if (datarate == 1620) | (datarate == 5376):
-            self.set_lowpower(True)
 
     def set_resolution(self, resolution):
         valid_resolutions = ['low', 'normal', 'high']
