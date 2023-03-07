@@ -1,3 +1,4 @@
+from __future__ import annotations
 
 from multiprocessing.connection import Connection
 
@@ -5,17 +6,26 @@ import edge_ai.sensor as sensor
 from ..basecontroller import BaseController
 
 class ADS1015(BaseController):
-    def __init__(self, address = 0x48, busnum = 1) -> None:
+    def __init__(self, mode, busconfig) -> None:
         super().__init__()
-        self._address = address
-        self._busnum = busnum
+        self._mode = mode
+        self._busconfig = busconfig
 
         # set up the bus
         # defaults
         self._adc_gain = 1
 
+    @staticmethod
+    def I2C(address, busnum) -> ADS1015:
+        busconfig = {
+            'address': address,
+            'busnum': busnum
+        }
+        controller = ADS1015('i2c', busconfig)
+        return controller
+
     def _initialize_sensor(self)-> sensor.adc.ADS1015:
-        return sensor.adc.ADS1015(self._address, self._busnum)
+        return sensor.adc.ADS1015(**self._busconfig)
 
     def _internal_loop(self, pipe: Connection):
         # this is a loop that manages the running of the sensor.

@@ -89,7 +89,7 @@ def test_motionsensor_controller():
         time.sleep(0.1)
 
 def test_adc_controller():
-    adc_controller = controller.adc.ADS1015()
+    adc_controller = controller.adc.ADS1015.I2C(0x48, 1)
     adc_controller.start()
 
     print("Outputting ADC output, Ctrl + C to stop:")
