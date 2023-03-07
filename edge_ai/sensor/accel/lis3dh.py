@@ -3,7 +3,7 @@ import multiprocessing as mp
 from typing import Type
 from multiprocessing.connection import Connection
 
-from .. import BaseSensor
+from ..basesensor import BaseSensor, check_if_running
 from ...bus import BaseBus, I2CBus, SPIBus
 
 class LIS3DH(BaseSensor):
@@ -31,6 +31,7 @@ class LIS3DH(BaseSensor):
         self._datarate = 5376
         self._selftest = None
         self._highpass = False
+        # self._running = False
         
     @staticmethod
     def SPI(busnum, cs, maxspeed = 1_000_000, mode = 3, debug = False) -> 'LIS3DH':
@@ -42,19 +43,8 @@ class LIS3DH(BaseSensor):
         bus = I2CBus(address, busnum, debug)
         return LIS3DH(bus, debug)
 
-    def _enable_axes(self, x = True, y = True, z = True):
-        cfg = self._bus.read_register(0x20)
-
-        if x: 
-            cfg |= 0b001
-        if y: 
-            cfg |= 0b010
-        if z:
-            cfg |= 0b100
-            
-        self._bus.write_register(0x20, cfg)
-
-    def _set_datarate(self, datarate):
+    @check_if_running
+    def set_datarate(self, datarate):
         #TODO: Make datarate and lowpower settings more robust
         if datarate not in self.DATARATES.keys():
             raise "Data Rate must be one of: 1, 10, 25, 50, 100, 200, 400, 1600, 1344, 5376Hz"
@@ -66,9 +56,10 @@ class LIS3DH(BaseSensor):
         self._bus.write_register(0x20, cfg)
         
         if (datarate == 1600) | (datarate == 5376):
-            self._set_lowpower(True)
+            self.set_lowpower(True)
 
-    def _set_lowpower(self, lowpower = False):
+    @check_if_running
+    def set_lowpower(self, lowpower = False):
         cfg = self._bus.read_register(0x20)
         
         # set LPen bit on register 20 to either on or off
@@ -79,36 +70,50 @@ class LIS3DH(BaseSensor):
         
         self._bus.write_register(0x20, cfg)
         
-    def _set_selftest(self, value):
+    @check_if_running
+    def set_selftest(self, selftest_mode = None):
         cfg = self._bus.read_register(0x23)
         
         cfg &= 0b001
         
-        if value is None:
+        if selftest_mode is None:
             pass
-        elif value == 'high':
+        elif selftest_mode == 'high':
             cfg |= 0b100
-        elif value == 'low':
+        elif selftest_mode == 'low':
             cfg |= 0b010
 
         self._bus.write_register(0x23, cfg)
 
-    def _enable_highpass(self):
+    @check_if_running
+    def enable_highpass(self, highpass_on = False):
         cfg = self._bus.read_register(0x21)
         
-        if self._highpass:
+        if highpass_on:
             cfg |= 0b10001000
         else:
             cfg &= 0b00000111
         
         self._bus.write_register(0x21, cfg)
+            
+    @check_if_running
+    def enable_axes(self, x = True, y = True, z = True):
+        cfg = self._bus.read_register(0x20)
 
-    def _setup(self):
-        #TODO: setter and config for scale
-        self._enable_axes(self.x, self.y, self.z)
-        self._set_datarate(self._datarate)
-        self._set_selftest(self._selftest)
-        self._enable_highpass()
+        if x: 
+            cfg |= 0b001
+        if y: 
+            cfg |= 0b010
+        if z:
+            cfg |= 0b100
+            
+        self._bus.write_register(0x20, cfg)
+
+    @check_if_running
+    def read(self):
+        # TODO: generalize this to other resolutions
+        raw_values = self._read_sensors_lowpower()
+        return [self._convert_to_gs(value) for value in raw_values]
 
     def _read_sensors_lowpower(self):
         x = self._bus.read_register(0x29)
@@ -131,63 +136,3 @@ class LIS3DH(BaseSensor):
             value -= max_val
 
         return float(value) / ((max_val/2)/self._scale)
-
-    def read(self):
-        # TODO: generalize this to other resolutions
-        raw_values = self._read_sensors_lowpower()
-        return [self._convert_to_gs(value) for value in raw_values]
-
-    @property
-    def datarate(self):
-        return self._datarate
-    
-    @datarate.setter
-    def datarate(self, rate):
-        if rate not in self.DATARATES.keys():
-            raise "Data Rate must be one of: 1, 10, 25, 50, 100, 200, 400, 1600, 1344, 5376Hz"
-
-        self._datarate = rate
-
-    @property
-    def scale(self):
-        return self._scale
-
-    @scale.setter
-    def scale(self, value):
-        # TODO: allow only valid sscales (2,4,8,16)
-        self._scale = value
-        
-    @property
-    def x(self) -> bool:
-        return self._x_enabled
-
-    @x.setter
-    def x(self, value):
-        self._x_enabled = value
-        
-    @property
-    def y(self) -> bool:
-        return self._z_enabled
-
-    @y.setter
-    def y(self, value):
-        self._y_enabled = value
-        
-    @property
-    def z(self) -> bool:
-        return self._z_enabled
-
-    @z.setter
-    def z(self, value):
-        self._z_enabled = value
-
-    def enable_axes(self, x = True, y = True,z = True):
-        self.x = x
-        self.y = y
-        self.z = z
-    
-    def selftest(self, test = None):
-        self._selftest = test
-        
-    def highpass(self, enable = False):
-        self._highpass = enable
