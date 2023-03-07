@@ -1,7 +1,7 @@
 from typing import Type
 
 from ..basesensor import BaseSensor
-from ...bus import BaseBus, I2CBus, SPIBus
+from ...bus import BaseBus, I2C, SPIBus
 
 class LIS3DH(BaseSensor):
     DATARATES = {
@@ -36,7 +36,7 @@ class LIS3DH(BaseSensor):
 
     @staticmethod
     def I2C(address, busnum, debug = False) -> 'LIS3DH':
-        bus = I2CBus(address, busnum, debug)
+        bus = I2C(address, busnum, debug)
         return LIS3DH(bus, debug)
 
     def set_datarate(self, datarate):
