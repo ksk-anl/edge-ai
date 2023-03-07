@@ -2,9 +2,10 @@ import math
 import time
 import argparse
 
+import edge_ai.controller as controller
+
 # from edge_ai.sensor import LIS3DH
 from edge_ai.sensor.accel import LIS3DH
-
 from edge_ai.sensor.adc import ADS1015
 
 def test_i2c_motion_sensor():
@@ -71,10 +72,27 @@ def adc_triggers_motionsensor():
 
         time.sleep(0.1)
 
+def test_motionsensor_controller():
+    motioncontrol = controller.lis3dh.LIS3DH.SPI(0, 0)
+    motioncontrol.start()
+
+    while True:
+    # for _ in range(200):
+        values = motioncontrol.read()
+        
+        final_value = math.sqrt(sum([x**2 for x in values]))
+        
+        print(f'{[f"{val:1.5f}" for val in values]}: {final_value}')
+        
+        time.sleep(0.1)
+    
+    
+    
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('mode', 
-                        choices=['1', '2', '3', '4', '5'],
+                        choices=['1', '2', '3', '4', '5', '6'],
                         help= 'Choose a mode/sensor to test: 1: i2c motionsensor, 2: spi motionsensor, 3: ADC (analog sensor), 4: ADC ping when above 2.5')
     
     args = parser.parse_args()
@@ -89,6 +107,8 @@ def main():
         adc_ping_when_above_thresh()
     elif args.mode == '5':
         adc_triggers_motionsensor()
+    elif args.mode == '6':
+        test_motionsensor_controller()
 
 if __name__ == '__main__':
     main()

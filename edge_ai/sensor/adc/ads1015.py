@@ -1,9 +1,5 @@
 import Adafruit_ADS1x15
 
-import multiprocessing as mp
-
-from multiprocessing.connection import Connection
-
 from ..basesensor import BaseSensor
 
 class ADS1015(BaseSensor):

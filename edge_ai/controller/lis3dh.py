@@ -1,6 +1,6 @@
 from multiprocessing.connection import Connection
 
-import edge_ai.sensor.accel as accel
+import edge_ai.sensor as sensor
 from .basecontroller import BaseController
 
 class LIS3DH(BaseController):
@@ -34,37 +34,31 @@ class LIS3DH(BaseController):
         }
         return controller
 
-    def _initialize_sensor(self)-> accel.LIS3DH:
+    def _initialize_sensor(self)-> sensor.accel.LIS3DH:
         if self._mode == 'spi':
-            return accel.LIS3DH.SPI(**self._busconfig)
+            return sensor.accel.LIS3DH.SPI(**self._busconfig)
         elif self._mode == 'i2c':
-            return accel.LIS3DH.I2C(**self._busconfig)
-            
-    # def start(self):
-    #     pass
-    
-    # def stop(self):
-    #     pass
+            return sensor.accel.LIS3DH.I2C(**self._busconfig)
 
     def _internal_loop(self, pipe: Connection):
         # this is a loop that manages the running of the sensor.
 
-        # Initialize Bus
+        # Initialize Sensor
         # self._bus = self._initialize_bus(self._bustype, self._busconfig)
         sensor = self._initialize_sensor()
-        sensor.start()
         
         # Write any settings, config, etc
         #TODO: Setup sensor configs from the controller
-        # self._setup()
+        sensor.set_datarate(5376)
+        sensor.enable_axes()
+        sensor.set_selftest(None)
         
         latest_value = None
         while True:
             # if there's new data in the sensor, update latest value
-            if sensor._new_data_available():
+            if sensor.new_data_available():
                 #TODO: non-lowpower version
-                raw_values = sensor._read_sensors_lowpower()
-                latest_value = [sensor._convert_to_gs(value) for value in raw_values]
+                latest_value = sensor.read()
 
             # poll the pipe
             if pipe.poll():
