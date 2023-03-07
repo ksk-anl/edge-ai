@@ -11,9 +11,7 @@ class BaseSensor(ABC):
         self._bus = bus
         self._running = False
 
-        self._external_pipe, self._internal_pipe = mp.Pipe(True)
         self.DEBUG = debug
-
         self.start()
     
     def start(self):

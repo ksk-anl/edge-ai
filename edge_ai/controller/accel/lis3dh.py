@@ -45,20 +45,20 @@ class LIS3DH(BaseController):
 
         # Initialize Sensor
         # self._bus = self._initialize_bus(self._bustype, self._busconfig)
-        sensor = self._initialize_sensor()
+        _sensor = self._initialize_sensor()
         
         # Write any settings, config, etc
         #TODO: Setup sensor configs from the controller
-        sensor.set_datarate(5376)
-        sensor.enable_axes()
-        sensor.set_selftest(None)
+        _sensor.set_datarate(5376)
+        _sensor.enable_axes()
+        _sensor.set_selftest(None)
         
         latest_value = None
         while True:
             # if there's new data in the sensor, update latest value
-            if sensor.new_data_available():
+            if _sensor.new_data_available():
                 #TODO: non-lowpower version
-                latest_value = sensor.read()
+                latest_value = _sensor.read()
 
             # poll the pipe
             if pipe.poll():

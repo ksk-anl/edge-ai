@@ -24,7 +24,7 @@ class ADS1015(BaseController):
 
         # Initialize Sensor
         # self._bus = self._initialize_bus(self._bustype, self._busconfig)
-        sensor = self._initialize_sensor()
+        _sensor = self._initialize_sensor()
         
         # Write any settings, config, etc
         #TODO: Setup sensor configs from the controller
@@ -33,7 +33,7 @@ class ADS1015(BaseController):
 
         # TODO: add more control over which are read/etc
         while True:
-            latest_value = sensor.read_diff(0)
+            latest_value = _sensor.read_diff(0)
 
             # poll the pipe
             if pipe.poll():
