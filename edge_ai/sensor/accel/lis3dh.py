@@ -3,7 +3,7 @@ import multiprocessing as mp
 from typing import Type
 from multiprocessing.connection import Connection
 
-from ..basesensor import BaseSensor#, check_if_running
+from ..basesensor import BaseSensor
 from ...bus import BaseBus, I2CBus, SPIBus
 
 class LIS3DH(BaseSensor):
@@ -43,7 +43,6 @@ class LIS3DH(BaseSensor):
         bus = I2CBus(address, busnum, debug)
         return LIS3DH(bus, debug)
 
-    @BaseSensor.check_if_running
     def set_datarate(self, datarate):
         #TODO: Make datarate and lowpower settings more robust
         if datarate not in self.DATARATES.keys():
@@ -58,7 +57,6 @@ class LIS3DH(BaseSensor):
         if (datarate == 1600) | (datarate == 5376):
             self.set_lowpower(True)
 
-    @BaseSensor.check_if_running
     def set_lowpower(self, lowpower = False):
         cfg = self._bus.read_register(0x20)
         
@@ -70,7 +68,6 @@ class LIS3DH(BaseSensor):
         
         self._bus.write_register(0x20, cfg)
         
-    @BaseSensor.check_if_running
     def set_selftest(self, selftest_mode = None):
         cfg = self._bus.read_register(0x23)
         
@@ -85,7 +82,6 @@ class LIS3DH(BaseSensor):
 
         self._bus.write_register(0x23, cfg)
 
-    @BaseSensor.check_if_running
     def enable_highpass(self, highpass_on = False):
         cfg = self._bus.read_register(0x21)
         
@@ -96,7 +92,6 @@ class LIS3DH(BaseSensor):
         
         self._bus.write_register(0x21, cfg)
             
-    @BaseSensor.check_if_running
     def enable_axes(self, x = True, y = True, z = True):
         cfg = self._bus.read_register(0x20)
 
@@ -109,7 +104,6 @@ class LIS3DH(BaseSensor):
             
         self._bus.write_register(0x20, cfg)
 
-    @BaseSensor.check_if_running
     def read(self):
         # TODO: generalize this to other resolutions
         raw_values = self._read_sensors_lowpower()
