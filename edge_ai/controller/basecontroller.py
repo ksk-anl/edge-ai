@@ -9,32 +9,25 @@ class BaseController(ABC):
     Controllers run sensors in a separate subprocess, and communicate with them
     via pipe.
     """
-    def __init__(self, debug = False) -> None:
+    def __init__(self) -> None:
+
         self._external_pipe, self._internal_pipe = mp.Pipe(True)
-
-        self._running = False
-        self.DEBUG = debug
-    
-    def start(self):
-        self._running = True
-        self._process = mp.Process(target = self._internal_loop, 
+        self._process = mp.Process(target = self._internal_loop,
                                    args = (self._internal_pipe, ))
-        self._process.start()
-    
-    def stop(self):
-        # close running process
-        self._running = False
-        self._process.kill()
-        
-    def read(self):
-        if self.DEBUG:
-            print("Sending 'read' down the pipe...")
 
+    def start(self):
+        self._process.start()
+
+    def stop(self):
+        if not self._process.is_alive():
+            raise Exception("Attempted to stop Process before starting")
+
+        # close running process
+        self._process.kill()
+
+    def read(self):
         self._external_pipe.send("read")
-        
-        if self.DEBUG:
-            print("Waiting for return from pipe...")
-        
+
         return self._external_pipe.recv()
 
     @abstractmethod

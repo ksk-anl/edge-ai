@@ -25,36 +25,36 @@ def test_spi_motion_sensor():
     while True:
     # for _ in range(200):
         values = motionsensor.read()
-        
+
         final_value = math.sqrt(sum([x**2 for x in values]))
-        
+
         print(f'{[f"{val:1.5f}" for val in values]}: {final_value}')
-        
+
         time.sleep(0.1)
-    
+
     print("Finished recording")
     motionsensor.stop()
-    
+
 def test_adc():
     adc = ADS1015()
     adc.start_diff()
-    
+
     print("Outputting ADC output, Ctrl + C to stop:")
     while True:
         print(f"{adc.read()} V")
         time.sleep(0.1)
-    
+
 def adc_ping_when_above_thresh():
     adc = ADS1015()
     adc.start()
     THRESH = 2.5
-    
+
     print("Outputting ADC output, Ctrl + C to stop:")
     while True:
         if adc.read() > THRESH:
             print(f"Found data above {THRESH} V!")
         time.sleep(0.1)
-    
+
 def adc_triggers_motionsensor():
     motionsensor = controller.accel.LIS3DH.SPI(0, 0)
     # motionsensor.set_datarate(5376)
@@ -65,10 +65,10 @@ def adc_triggers_motionsensor():
     motionsensor.start()
     adc.start()
     THRESH = 2.5
-    
+
     while True:
         print("Waiting for ADC to go high before recording motion...")
-        
+
         if adc.read() > THRESH:
             print(f'Detected high ADC! motionsensor reading: {motionsensor.read()}')
 
@@ -81,13 +81,13 @@ def test_motionsensor_controller():
     while True:
     # for _ in range(200):
         values = motioncontrol.read()
-        
+
         final_value = math.sqrt(sum([x**2 for x in values]))
-        
+
         print(f'{[f"{val:1.5f}" for val in values]}: {final_value}')
-        
+
         time.sleep(0.1)
-    
+
 def test_adc_controller():
     adc_controller = controller.adc.ADS1015()
     adc_controller.start()
@@ -96,17 +96,16 @@ def test_adc_controller():
     while True:
         print(f"{adc_controller.read()} V")
         time.sleep(0.1)
-    
-    
+
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('mode', 
+    parser.add_argument('mode',
                         choices=['1', '2', '3', '4', '5', '6', '7'],
                         help= 'Choose a mode/sensor to test: 1: i2c motionsensor, 2: spi motionsensor, 3: ADC (analog sensor), 4: ADC ping when above 2.5')
-    
+
     args = parser.parse_args()
-    
+
     if args.mode == '1':
         test_i2c_motion_sensor()
     elif args.mode == '2':
