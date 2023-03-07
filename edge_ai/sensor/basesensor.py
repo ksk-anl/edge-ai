@@ -9,7 +9,7 @@ from ..bus import BaseBus
 def check_if_running(f):
     def inner(self, *args, **kwargs):
         if not self._running:
-            raise f"The sensor ({self.__class__.__name__}) has not been started."
+            raise Exception(f"The sensor ({self.__class__.__name__}) has not been started.")
         f(*args, **kwargs)
     return inner
 

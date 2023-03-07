@@ -13,11 +13,11 @@ def test_i2c_motion_sensor():
 def test_spi_motion_sensor():
     print("Testing Motion Sensor Values:")
     motionsensor = LIS3DH.SPI(0, 0)
+    motionsensor.start()
     motionsensor.set_datarate(5376)
     motionsensor.enable_axes()
     # motionsensor.set_selftest('low')
 
-    motionsensor.start()
 
     while True:
     # for _ in range(200):
