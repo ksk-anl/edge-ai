@@ -31,7 +31,6 @@ class LIS3DH(BaseSensor):
         self._datarate = 5376
         self._selftest = None
         self._highpass = False
-        # self._running = False
         
     @staticmethod
     def SPI(busnum, cs, maxspeed = 1_000_000, mode = 3, debug = False) -> 'LIS3DH':
@@ -58,6 +57,7 @@ class LIS3DH(BaseSensor):
             self.set_lowpower(True)
 
     def set_lowpower(self, lowpower = False):
+        self._lowpower = lowpower
         cfg = self._bus.read_register(0x20)
         
         # set LPen bit on register 20 to either on or off
@@ -109,17 +109,17 @@ class LIS3DH(BaseSensor):
         raw_values = self._read_sensors_lowpower()
         return [self._convert_to_gs(value) for value in raw_values]
 
+    def new_data_available(self) -> bool:
+        status = self._bus.read_register(0x27)
+        status = (status >> 3) & 1
+        return status
+
     def _read_sensors_lowpower(self):
         x = self._bus.read_register(0x29)
         y = self._bus.read_register(0x2B)
         z = self._bus.read_register(0x2D)
         
         return (x, y ,z)
-
-    def _new_data_available(self) -> bool:
-        status = self._bus.read_register(0x27)
-        status = (status >> 3) & 1
-        return status
 
     def _convert_to_gs(self, value) -> float:
         if self._lowpower:

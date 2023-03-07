@@ -16,7 +16,7 @@ def test_spi_motion_sensor():
     motionsensor.start()
     motionsensor.set_datarate(5376)
     motionsensor.enable_axes()
-    # motionsensor.set_selftest('low')
+    motionsensor.set_selftest(None)
 
 
     while True:
@@ -34,7 +34,7 @@ def test_spi_motion_sensor():
     
 def test_adc():
     adc = ADS1015()
-    adc.start()
+    adc.start_diff()
     
     print("Outputting ADC output, Ctrl + C to stop:")
     while True:
