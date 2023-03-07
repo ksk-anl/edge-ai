@@ -6,6 +6,7 @@ from ..basecontroller import BaseController
 
 class ADS1015(BaseController):
     def __init__(self, address = 0x48, busnum = 1, debug = False) -> None:
+        super().__init__(debug)
         self._address = address
         self._busnum = busnum
 
