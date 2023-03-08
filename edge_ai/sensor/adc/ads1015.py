@@ -7,7 +7,7 @@ class ADS1015(BaseSensor):
     # Might be a good idea to generalize this by using spidev/smbus,
     # but that would take time we don't have right now
 
-    def __init__(self, address = 0x48, busnum = 1) -> None:
+    def __init__(self, address: int = 0x48, busnum: int = 1) -> None:
         self._address = address
         self._busnum = busnum
 
@@ -21,29 +21,28 @@ class ADS1015(BaseSensor):
     def start(self):
         self.start_single(0)
 
-    def start_single(self, channel = 0):
+    def start_single(self, channel: int = 0):
         self._adc.start_adc(channel, gain = self._adc_gain)
 
-    def start_diff(self, differential = 0):
+    def start_diff(self, differential: int = 0):
         self._adc.start_adc_difference(differential, gain = self._adc_gain)
 
     def stop(self):
         self._adc.stop_adc()
 
-    def read(self):
+    def read(self) -> float:
         raw_diff = self._adc.get_last_result()
         return self._sensor_raw_value_to_v(raw_diff)
 
-    def read_single(self, channel = 0):
+    def read_single(self, channel: int = 0) -> float:
         raw = self._adc.read_adc(channel)
         return self._sensor_raw_value_to_v(raw)
 
-    def read_diff(self, differential = 0):
+    def read_diff(self, differential: int = 0) -> float:
         raw = self._adc.read_adc_difference(differential)
         return self._sensor_raw_value_to_v(raw)
 
     # TODO: ADC gain setters
-
     @staticmethod
-    def _sensor_raw_value_to_v(value) -> float:
+    def _sensor_raw_value_to_v(value: int) -> float:
         return value * 4.096 * 2 / 4096

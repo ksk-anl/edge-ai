@@ -4,15 +4,15 @@ class BaseBus(ABC):
     @abstractmethod
     def start(self):
         ...
-        
+
     @abstractmethod
-    def stop(self):
-        ...
-        
-    @abstractmethod
-    def read_register(self, register):
+    def stop(self) -> None:
         ...
 
     @abstractmethod
-    def write_register(self, register, value):
+    def read_register(self, register: int) -> int:
+        ...
+
+    @abstractmethod
+    def write_register(self, register: int, value: int) -> None:
         ...

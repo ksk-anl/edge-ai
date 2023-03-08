@@ -6,14 +6,14 @@ import edge_ai.sensor as sensor
 from ..basecontroller import BaseController
 
 class LIS3DH(BaseController):
-    def __init__(self, mode, busconfig) -> None:
+    def __init__(self, mode: str, busconfig: dict[str, int]) -> None:
         super().__init__()
 
         self._busconfig = busconfig
         self._mode = mode
 
     @staticmethod
-    def SPI(busnum, cs, maxspeed = 1_000_000, mode = 3) -> LIS3DH:
+    def SPI(busnum: int, cs: int, maxspeed: int = 1_000_000, mode: int = 3) -> LIS3DH:
         busconfig = {
             'busnum': busnum,
             'cs': cs,
@@ -24,7 +24,7 @@ class LIS3DH(BaseController):
         return controller
 
     @staticmethod
-    def I2C(address, busnum) -> LIS3DH:
+    def I2C(address: int, busnum: int) -> LIS3DH:
         busconfig = {
             'address': address,
             'busnum': busnum
@@ -40,7 +40,7 @@ class LIS3DH(BaseController):
         else:
             raise Exception("Mode must be spi or i2c")
 
-    def _internal_loop(self, pipe: Connection):
+    def _internal_loop(self, pipe: Connection) -> None:
         # this is a loop that manages the running of the sensor.
 
         # Initialize Sensor
@@ -64,5 +64,4 @@ class LIS3DH(BaseController):
 
                 # if pipe says "read", send out the data into the pipe
                 if message == "read":
-
                     pipe.send(latest_value)
