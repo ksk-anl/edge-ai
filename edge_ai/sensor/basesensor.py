@@ -1,4 +1,4 @@
-from typing import Type
+from typing import Any, Type
 from abc import ABC, abstractmethod
 
 from ..bus import BaseBus
@@ -11,14 +11,14 @@ class BaseSensor(ABC):
 
         self.start()
 
-    def start(self):
+    def start(self) -> None:
         if self._running:
             return
 
         self._bus.start()
         self._running = True
 
-    def stop(self):
+    def stop(self) -> None:
         if not self._running:
             raise Exception("Attempted to stop sensor before starting")
 
@@ -26,5 +26,5 @@ class BaseSensor(ABC):
         self._running = False
 
     @abstractmethod
-    def read(self):
+    def read(self) -> Any:
         ...

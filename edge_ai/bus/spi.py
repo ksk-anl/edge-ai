@@ -3,7 +3,7 @@ import spidev
 from .basebus import BaseBus
 
 class SPI(BaseBus):
-    def __init__(self, busnum: int, cs: int, maxspeed: int = 1_000_000, mode: int = 3):
+    def __init__(self, busnum: int, cs: int, maxspeed: int = 1_000_000, mode: int = 3) -> None:
         self._busnum = busnum
         self._cs = cs
         self._maxspeed = maxspeed
@@ -34,7 +34,7 @@ class SPI(BaseBus):
 
         return self._get_bus().xfer2(to_read)[1]
 
-    def write_register(self, register: int, value: int) -> int:
+    def write_register(self, register: int, value: int) -> None:
         to_write = [register, value]
 
         self._get_bus().xfer2(to_write)

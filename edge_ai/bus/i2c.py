@@ -3,7 +3,7 @@ import smbus2
 from .basebus import BaseBus
 
 class I2C(BaseBus):
-    def __init__(self, address: int, busnum: int):
+    def __init__(self, address: int, busnum: int) -> None:
         self._address = address
         self._busnum = busnum
 

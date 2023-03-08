@@ -77,10 +77,10 @@ class LIS3DH(BaseSensor):
             valid_rates = [str(rate) for rate in self.DATARATES.keys()]
             raise Exception(f"Data Rate must be one of: {', '.join(valid_rates)}Hz")
 
-        if ((datarate == 1620) | (datarate == 5376)) & self._resolution != 'low':
+        if ((datarate == 1620) or (datarate == 5376)) and (self._resolution != 'low'):
             raise Exception("1620Hz and 5376Hz mode only allowed on Low Power mode")
 
-        if datarate == 1344 & self._resolution == 'low':
+        if datarate == 1344 and self._resolution == 'low':
             raise Exception("1344Hz mode not allowed on Low Power mode")
 
         cfg = self._bus.read_register(self.CTRL_REG1)
@@ -138,7 +138,7 @@ class LIS3DH(BaseSensor):
 
         self._bus.write_register(self.CTRL_REG4, cfg)
 
-    def enable_highpass(self, highpass: bool = True):
+    def enable_highpass(self, highpass: bool = True) -> None:
         cfg = self._bus.read_register(self.CTRL_REG2)
 
         if highpass:
@@ -148,7 +148,7 @@ class LIS3DH(BaseSensor):
 
         self._bus.write_register(self.CTRL_REG2, cfg)
 
-    def enable_axes(self, x: bool = True, y: bool = True, z: bool = True):
+    def enable_axes(self, x: bool = True, y: bool = True, z: bool = True) -> None:
         cfg = self._bus.read_register(self.CTRL_REG1)
 
         if x:
@@ -160,7 +160,7 @@ class LIS3DH(BaseSensor):
 
         self._bus.write_register(self.CTRL_REG1, cfg)
 
-    def read(self):
+    def read(self) -> tuple[float, float, float]:
         raw_values = self._read_sensors()
         return [self._raw_sensor_value_to_gravity(value) for value in raw_values]
 
@@ -169,7 +169,7 @@ class LIS3DH(BaseSensor):
         status = (status >> 3) & 1
         return status
 
-    def _read_sensors(self) -> tuple(int, int, int):
+    def _read_sensors(self) -> tuple[int, int, int]:
         x = self._bus.read_register(self.OUT_X_H)
         y = self._bus.read_register(self.OUT_Y_H)
         z = self._bus.read_register(self.OUT_Z_H)
@@ -188,7 +188,7 @@ class LIS3DH(BaseSensor):
 
         return (x, y ,z)
 
-    def _raw_sensor_value_to_gravity(self, value) -> float:
+    def _raw_sensor_value_to_gravity(self, value: int) -> float:
         bits = self.RESOLUTIONS[self._resolution]
 
         max_val = 2 ** bits

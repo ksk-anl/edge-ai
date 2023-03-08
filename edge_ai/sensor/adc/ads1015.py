@@ -18,16 +18,16 @@ class ADS1015(BaseSensor):
         self._adc_gain = 1
 
     # Overload Base class start implementation
-    def start(self):
+    def start(self) -> None:
         self.start_single(0)
 
-    def start_single(self, channel: int = 0):
+    def start_single(self, channel: int = 0) -> None:
         self._adc.start_adc(channel, gain = self._adc_gain)
 
-    def start_diff(self, differential: int = 0):
+    def start_diff(self, differential: int = 0) -> None:
         self._adc.start_adc_difference(differential, gain = self._adc_gain)
 
-    def stop(self):
+    def stop(self) -> None:
         self._adc.stop_adc()
 
     def read(self) -> float:

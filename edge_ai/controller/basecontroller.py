@@ -16,10 +16,10 @@ class BaseController(ABC):
         self._process = mp.Process(target = self._internal_loop,
                                    args = (self._internal_pipe, ))
 
-    def start(self):
+    def start(self) -> None:
         self._process.start()
 
-    def stop(self):
+    def stop(self) -> None:
         if not self._process.is_alive():
             raise Exception("Attempted to stop controller before starting")
 

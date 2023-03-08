@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 
 class BaseBus(ABC):
     @abstractmethod
-    def start(self):
+    def start(self) -> None:
         ...
 
     @abstractmethod
