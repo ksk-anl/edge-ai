@@ -6,7 +6,7 @@ import edge_ai.sensor as sensor
 from ..basecontroller import BaseController
 
 class ADS1015(BaseController):
-    def __init__(self, mode: int, busconfig: dict[str, int]) -> None:
+    def __init__(self, mode: str, busconfig: dict[str, int]) -> None:
         super().__init__()
         self._mode = mode
         self._busconfig = busconfig

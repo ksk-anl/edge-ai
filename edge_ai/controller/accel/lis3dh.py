@@ -50,7 +50,7 @@ class LIS3DH(BaseController):
         #TODO: Setup sensor configs from the controller
         motionsensor.set_datarate(5376)
         motionsensor.enable_axes()
-        motionsensor.set_selftest(None)
+        motionsensor.set_selftest('off')
 
         latest_value = None
         while True:
