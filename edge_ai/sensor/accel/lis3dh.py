@@ -160,14 +160,14 @@ class LIS3DH(BaseSensor):
 
         self._bus.write_register(self.CTRL_REG1, cfg)
 
-    def read(self) -> list[float, float, float]:
+    def read(self) -> list[float]:
         raw_values = self._read_sensors()
         return [self._raw_sensor_value_to_gravity(value) for value in raw_values]
 
     def new_data_available(self) -> bool:
         status = self._bus.read_register(self.STATUS_REGISTER)
         status = (status >> 3) & 1
-        return status
+        return bool(status)
 
     def _read_sensors(self) -> tuple[int, int, int]:
         x = self._bus.read_register(self.OUT_X_H)
