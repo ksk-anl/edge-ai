@@ -3,10 +3,12 @@ from __future__ import annotations
 import math
 import time
 
+from typing import Callable
+
 import edge_ai.controller as controller
 import edge_ai.sensor as sensor
 
-def allow_kbinterrupt(f):
+def allow_kbinterrupt(f: Callable[[], None]) -> Callable[[], None]:
     def inner():
         try:
             f()
@@ -69,9 +71,7 @@ def motionsensor_controller_spi() -> None:
     while True:
         values = motioncontrol.read()
 
-        final_value = math.sqrt(sum([x**2 for x in values]))
-
-        print(f'{", ".join([f"{val: 1.5f}" for val in values])}: {final_value}')
+        print(_format_motionsensor_output(values))
 
         time.sleep(0.1)
 
