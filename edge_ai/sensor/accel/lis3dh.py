@@ -19,7 +19,12 @@ class LIS3DH(BaseSensor):
         1620: 8,
         5376: 9
         }
-    MEASUREMENT_RANGES = [2, 4, 8, 16]
+    MEASUREMENT_RANGES = {
+        2:  0b00,
+        4:  0b01,
+        8:  0b10,
+        16: 0b11
+    }
     SELFTEST_MODES = ['off', 'low', 'high']
     RESOLUTIONS = {
         'low' :    8,
@@ -69,8 +74,15 @@ class LIS3DH(BaseSensor):
         return LIS3DH(bus)
 
     def set_measurement_range(self, measurement_range: int) -> None:
-        if measurement_range not in self.MEASUREMENT_RANGES:
-            raise Exception(f"Measurement range must be one of: {', '.join([str(range) for range in self.MEASUREMENT_RANGES])}")
+        if measurement_range not in self.MEASUREMENT_RANGES.keys():
+            raise Exception(f"Measurement range must be one of: {', '.join([str(range) for range in self.MEASUREMENT_RANGES.keys()])}")
+
+        cfg = self._bus.read_register(self.CTRL_REG4)
+
+        cfg &= 0b11001111
+        cfg |= self.MEASUREMENT_RANGES[measurement_range] << 4
+
+        self._bus.write_register(self.CTRL_REG4, cfg)
 
     def set_datarate(self, datarate: int) -> None:
         if datarate not in self.DATARATES.keys():
@@ -126,6 +138,7 @@ class LIS3DH(BaseSensor):
     def set_selftest(self, mode: str = 'high') -> None:
         if mode not in self.SELFTEST_MODES:
             raise Exception(f"Selftest Mode must be one of: {' ,'.join(self.SELFTEST_MODES)}")
+
         cfg = self._bus.read_register(self.CTRL_REG4)
 
         cfg &= 0b001
