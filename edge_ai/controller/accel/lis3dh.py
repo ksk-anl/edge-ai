@@ -18,6 +18,9 @@ class LIS3DH(BaseController):
         self._datarate = 5376
         self._selftest = 'off'
         self._highpass = False
+        self._x = True
+        self._y = True
+        self._z = True
 
     @staticmethod
     def SPI(busnum: int, cs: int, maxspeed: int = 1_000_000, mode: int = 3) -> LIS3DH:
