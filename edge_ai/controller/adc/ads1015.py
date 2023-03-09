@@ -11,9 +11,7 @@ class ADS1015(BaseController):
         self._mode = mode
         self._busconfig = busconfig
 
-        # set up the bus
-        # defaults
-        self._adc_gain = 1
+        # TODO: set up defaults for sensor initialization
 
     @staticmethod
     def I2C(address: int, busnum: int) -> ADS1015:
