@@ -1,0 +1,23 @@
+{
+    "rdb_access": {
+        "dbname": "edge",
+        "user"  :   "postgres",
+        "password": "postgres",
+        "host": "192.168.0.38",
+        "port": "5432"
+    },
+    "device_id": 1,
+    "adc_threshold": 2.5,
+    "measurements": 20,
+    "motionsensor_spi": {
+        "busnum": 0,
+        "cs": 0
+    },
+    "adc_i2c" : {
+        "address": "0x48",
+        "busnum": 1
+    },
+    "window_length": 3,
+    "wait_time": 0.25,
+    "adc_measurement_interval": 0.1
+}
