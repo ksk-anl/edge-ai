@@ -14,10 +14,11 @@
         "cs": 0
     },
     "adc_i2c" : {
-        "address": "0x48",
+        "address": 72,
         "busnum": 1
     },
     "window_length": 3,
     "wait_time": 0.25,
-    "adc_measurement_interval": 0.1
+    "adc_measurement_interval": 0.1,
+    "timeformat": "%Y-%m-%d %H:%M:%S.%f"
 }

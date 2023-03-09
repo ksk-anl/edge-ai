@@ -10,20 +10,12 @@ import pandas as pd
 from edge_ai.controller.accel import LIS3DH
 from edge_ai.controller.adc import ADS1015
 
-TIMEFORMAT = '%Y-%m-%d %H:%M:%S.%f'
-
-# Postgres DB Access information
-# RDBACCESS = {
-#     'dbname': 'edge',
-#     'user'  :   'postgres',
-#     'password': 'postgres',
-#     'host': '192.168.0.38',
-#     'port': '5432'
-# }
 with open("config.json") as f:
-    config = json.loads(f)
-    RDBACCESS = config['rdb_access']
+    config = json.load(f)
 
+    TIMEFORMAT = config['timeformat']
+
+    RDBACCESS = config['rdb_access']
     DEVICE_ID = config['device_id']
 
     ADC_THRESHOLD = config['adc_threshold']
