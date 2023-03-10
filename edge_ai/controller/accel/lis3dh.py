@@ -106,8 +106,7 @@ class LIS3DH(BaseController):
         latest_value = None
         while True:
             # if there's new data in the sensor, update latest value
-            if self._sensor.new_data_available():
-                latest_value = self._sensor.read()
+            latest_value = self._sensor.read()
 
             # poll the pipe
             if pipe.poll():
