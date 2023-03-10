@@ -42,6 +42,7 @@ def motionsensor_spi() -> None:
     print("Testing Motion Sensor Values:")
     motionsensor = sensor.accel.LIS3DH.SPI(0, 0)
     motionsensor.start()
+    motionsensor.set_resolution('low')
     motionsensor.set_datarate(5376)
     motionsensor.enable_axes()
     motionsensor.set_selftest('off')
