@@ -109,14 +109,22 @@ def adc_triggers_motionsensor() -> None:
     motionsensor.start()
     adc.start()
     THRESH = 2.5
+    RECORD_TIME = 1
 
     while True:
         print("Waiting for ADC to go high before recording motion...")
 
-        if adc.read() > THRESH:
-            print(f'Detected high ADC! motionsensor reading: {motionsensor.read()}')
+        while True:
+            time.sleep(0.1)
+            val = adc.read()
+            if val > THRESH:
+                break
 
-        time.sleep(0.1)
+            finish = time.time() + RECORD_TIME
+            print(f'Detected high ADC!')
+            while time.time() < finish:
+                print(f'{_format_motionsensor_output(motionsensor.read())}')
+                time.sleep(0.1)
 
 def main():
     while True:
@@ -134,6 +142,8 @@ def main():
         print("    5: Test Motionsensor (SPI)")
         print("    ADS1015 Tests:")
         print("    6: Test ADC")
+        print("Combined Tests:")
+        print("    7: ADC HIGH triggers motion sensor")
 
         print("\n")
         choice = input("Enter choice (q to quit): ")
@@ -151,6 +161,8 @@ def main():
             motionsensor_controller_spi()
         elif choice == '6':
             adc_controller_i2c()
+        elif choice == '7':
+            adc_triggers_motionsensor()
 
 if __name__ == '__main__':
     main()
