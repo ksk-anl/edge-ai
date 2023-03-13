@@ -42,5 +42,5 @@ class ADS1015(BaseController):
                 message = pipe.recv()
 
                 # if pipe says "read", send out the data into the pipe
-                if message == "read":
+                if message[0] == "read":
                     pipe.send(adc.read_diff(0))

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import time
 from multiprocessing.connection import Connection
 
 import edge_ai.sensor as sensor
@@ -69,10 +70,25 @@ class LIS3DH(BaseController):
     def enable_highpass(self, highpass: bool = True) -> None:
         self._highpass = highpass
 
+    def read_for(self, seconds: float = 0) -> list[list[float]]:
+        self._external_pipe.send(("read for", seconds))
+
+        return self._external_pipe.recv()
+
     def enable_axes(self, x: bool = True, y: bool = True, z: bool = True) -> None:
         self._x = x
         self._y = y
         self._z = z
+
+    def _read_for(self, seconds: float) -> None:
+        start = time.time()
+
+        results = []
+
+        while time.time() < start + seconds:
+            results.append(self._sensor.read())
+
+        return results
 
     def _initialize_sensor(self) -> sensor.accel.LIS3DH:
         if self._interface == 'spi':
@@ -104,13 +120,12 @@ class LIS3DH(BaseController):
         self._configure_sensor()
 
         while True:
-            # if there's new data in the sensor, update latest value
-            # latest_value = self._sensor.read()
-
             # poll the pipe
             if pipe.poll():
                 message = pipe.recv()
 
                 # if pipe says "read", send out the data into the pipe
-                if message == "read":
+                if message[0] == "read":
                     pipe.send(self._sensor.read())
+                elif message[0] == "read for":
+                    pipe.send(self.read_for(message[1]))
