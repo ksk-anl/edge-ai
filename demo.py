@@ -92,7 +92,7 @@ def adc_triggers_motionsensor_sensor() -> None:
     motionsensor.set_datarate(5376)
     motionsensor.enable_axes()
 
-    adc = sensor.adc.ADS1015()
+    adc = sensor.adc.ADS1015.I2C(0x48, 1)
 
     motionsensor.start()
     adc.start()
@@ -108,11 +108,11 @@ def adc_triggers_motionsensor_sensor() -> None:
             if val > THRESH:
                 break
 
-            finish = time.time() + RECORD_TIME
-            print(f'Detected high ADC!')
-            while time.time() < finish:
-                print(f'{_format_motionsensor_output(motionsensor.read())}')
-                time.sleep(0.1)
+        finish = time.time() + RECORD_TIME
+        print(f'Detected high ADC!')
+        while time.time() < finish:
+            print(f'{_format_motionsensor_output(motionsensor.read())}')
+            time.sleep(0.1)
 
 @allow_kbinterrupt
 def adc_triggers_motionsensor_controller() -> None:
@@ -120,7 +120,7 @@ def adc_triggers_motionsensor_controller() -> None:
     motionsensor.set_datarate(5376)
     motionsensor.enable_axes()
 
-    adc = controller.adc.ADS1015()
+    adc = controller.adc.ADS1015.I2C(0x48, 1)
 
     motionsensor.start()
     adc.start()
@@ -136,11 +136,11 @@ def adc_triggers_motionsensor_controller() -> None:
             if val > THRESH:
                 break
 
-            finish = time.time() + RECORD_TIME
-            print(f'Detected high ADC!')
-            while time.time() < finish:
-                print(f'{_format_motionsensor_output(motionsensor.read())}')
-                time.sleep(0.1)
+        finish = time.time() + RECORD_TIME
+        print(f'Detected high ADC!')
+        while time.time() < finish:
+            print(f'{_format_motionsensor_output(motionsensor.read())}')
+            time.sleep(0.1)
 
 def main():
     while True:
