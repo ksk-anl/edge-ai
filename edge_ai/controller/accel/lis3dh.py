@@ -86,7 +86,8 @@ class LIS3DH(BaseController):
         results = []
 
         while time.time() < start + seconds:
-            results.append(self._sensor.read())
+            if self._sensor.new_data_available():
+                results.append(self._sensor.read())
 
         return results
 
@@ -128,4 +129,4 @@ class LIS3DH(BaseController):
                 if message[0] == "read":
                     pipe.send(self._sensor.read())
                 elif message[0] == "read for":
-                    pipe.send(self.read_for(message[1]))
+                    pipe.send(self._read_for(message[1]))

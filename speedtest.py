@@ -6,6 +6,7 @@ TEST_TIME = 10.
 
 def main() -> None:
     motionsensor = controller.accel.LIS3DH.SPI(0, 0, maxspeed= 10_000_000)
+    motionsensor.start()
     print(f"read() for {TEST_TIME} seconds")
 
     start = time.time()
@@ -21,6 +22,8 @@ def main() -> None:
 
     print("read_for:", end=" ")
     print(f"Recorded {len(read_for_results)} lines in {TEST_TIME} seconds! {(len(read_for_results) * 1.0) / TEST_TIME} Hz")
+
+    motionsensor.stop()
 
 if __name__ == "__main__":
     main()

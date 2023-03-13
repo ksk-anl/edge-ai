@@ -27,7 +27,7 @@ class BaseController(ABC):
         self._process.kill()
 
     def read(self) -> Any:
-        self._external_pipe.send(("read"))
+        self._external_pipe.send(("read", ))
 
         return self._external_pipe.recv()
 
