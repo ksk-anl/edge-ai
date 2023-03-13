@@ -19,7 +19,7 @@ def main() -> None:
         records += 1
 
     print(f'{records} lines recorded in {TEST_TIME} seconds! ({records*1.0/TEST_TIME}Hz)')
-
+    motionsensor.stop()
 
 if __name__ == '__main__':
     main()
