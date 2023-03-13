@@ -87,19 +87,35 @@ def adc_controller_i2c() -> None:
         time.sleep(0.1)
 
 @allow_kbinterrupt
-def adc_ping_when_above_thresh() -> None:
+def adc_triggers_motionsensor_sensor() -> None:
+    motionsensor = sensor.accel.LIS3DH.SPI(0, 0)
+    motionsensor.set_datarate(5376)
+    motionsensor.enable_axes()
+
     adc = sensor.adc.ADS1015()
+
+    motionsensor.start()
     adc.start()
     THRESH = 2.5
+    RECORD_TIME = 1
 
-    print("Outputting ADC output, Ctrl + C to stop:")
     while True:
-        if adc.read() > THRESH:
-            print(f"Found data above {THRESH} V!")
-        time.sleep(0.1)
+        print("Waiting for ADC to go high before recording motion...")
+
+        while True:
+            time.sleep(0.1)
+            val = adc.read()
+            if val > THRESH:
+                break
+
+            finish = time.time() + RECORD_TIME
+            print(f'Detected high ADC!')
+            while time.time() < finish:
+                print(f'{_format_motionsensor_output(motionsensor.read())}')
+                time.sleep(0.1)
 
 @allow_kbinterrupt
-def adc_triggers_motionsensor() -> None:
+def adc_triggers_motionsensor_controller() -> None:
     motionsensor = controller.accel.LIS3DH.SPI(0, 0)
     motionsensor.set_datarate(5376)
     motionsensor.enable_axes()
@@ -136,14 +152,16 @@ def main():
         print("    2: Test Motionsensor (SPI)")
         print("    ADS1015 Tests:")
         print("    3: Test ADC")
+        print("    Combined Tests:")
+        print("    4: ADC HIGH triggers motion sensor")
         print("Controller Class Tests")
         print("    LIS3DH Tests:")
-        print("    4: Test Motionsensor (I2C)")
-        print("    5: Test Motionsensor (SPI)")
+        print("    5: Test Motionsensor (I2C)")
+        print("    6: Test Motionsensor (SPI)")
         print("    ADS1015 Tests:")
-        print("    6: Test ADC")
+        print("    7: Test ADC")
         print("Combined Tests:")
-        print("    7: ADC HIGH triggers motion sensor")
+        print("    8: ADC HIGH triggers motion sensor")
 
         print("\n")
         choice = input("Enter choice (q to quit): ")
@@ -155,14 +173,14 @@ def main():
             motionsensor_spi()
         elif choice == '3':
             adc_sensor_i2c()
-        # elif args.mode == '4':
-        #     adc_ping_when_above_thresh()
-        elif choice == '5':
-            motionsensor_controller_spi()
+        elif choice == '4':
+            adc_triggers_motionsensor_sensor()
         elif choice == '6':
-            adc_controller_i2c()
+            motionsensor_controller_spi()
         elif choice == '7':
-            adc_triggers_motionsensor()
+            adc_controller_i2c()
+        elif choice == '8':
+            adc_triggers_motionsensor_controller()
 
 if __name__ == '__main__':
     main()
