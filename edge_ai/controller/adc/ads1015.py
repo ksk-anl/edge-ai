@@ -34,12 +34,9 @@ class ADS1015(BaseController):
         # Write any settings, config, etc
         #TODO: Setup sensor configs from the controller
 
-        latest_value = None
 
         # TODO: add more control over which are read/etc
         while True:
-            # latest_value = adc.read_diff(0)
-
             # poll the pipe
             if pipe.poll():
                 message = pipe.recv()
@@ -47,4 +44,3 @@ class ADS1015(BaseController):
                 # if pipe says "read", send out the data into the pipe
                 if message == "read":
                     pipe.send(adc.read_diff(0))
-                    # pipe.send(latest_value)

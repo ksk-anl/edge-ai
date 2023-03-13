@@ -103,7 +103,6 @@ class LIS3DH(BaseController):
         self._sensor.set_selftest('off')
         self._configure_sensor()
 
-        latest_value = None
         while True:
             # if there's new data in the sensor, update latest value
             # latest_value = self._sensor.read()
@@ -114,5 +113,4 @@ class LIS3DH(BaseController):
 
                 # if pipe says "read", send out the data into the pipe
                 if message == "read":
-                    # pipe.send(latest_value)
                     pipe.send(self._sensor.read())
