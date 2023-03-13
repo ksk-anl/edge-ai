@@ -38,7 +38,7 @@ class ADS1015(BaseController):
 
         # TODO: add more control over which are read/etc
         while True:
-            latest_value = adc.read_diff(0)
+            # latest_value = adc.read_diff(0)
 
             # poll the pipe
             if pipe.poll():
