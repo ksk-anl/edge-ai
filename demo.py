@@ -21,38 +21,29 @@ def _format_motionsensor_output(values: list[float]) -> str:
 
     return f'{", ".join([f"{val: 1.5f}" for val in values])}: {final_value}'
 
-@allow_kbinterrupt
-def motionsensor_i2c() -> None:
-    print("Testing Motion Sensor Values:")
-    motionsensor = sensor.accel.LIS3DH.I2C(0x18, 1)
-    motionsensor.start()
-    motionsensor.set_datarate(5376)
-    motionsensor.enable_axes()
-    motionsensor.set_selftest('off')
+def _motionsensor_test(sensor: sensor.accel.LIS3DH) -> None:
+    sensor.set_resolution('low')
+    sensor.set_datarate(5376)
+    sensor.set_selftest('off')
+    sensor.enable_axes()
 
+    print("Outputting Motion Sensor output, Ctrl + C to stop:")
     while True:
-        values = motionsensor.read()
+        values = sensor.read()
 
         print(_format_motionsensor_output(values))
 
         time.sleep(0.1)
+
+@allow_kbinterrupt
+def motionsensor_i2c() -> None:
+    motionsensor = sensor.accel.LIS3DH.I2C(0x18, 1)
+    _motionsensor_test(motionsensor)
 
 @allow_kbinterrupt
 def motionsensor_spi() -> None:
-    print("Testing Motion Sensor Values:")
     motionsensor = sensor.accel.LIS3DH.SPI(0, 0)
-    motionsensor.start()
-    motionsensor.set_resolution('low')
-    motionsensor.set_datarate(5376)
-    motionsensor.enable_axes()
-    motionsensor.set_selftest('off')
-
-    while True:
-        values = motionsensor.read()
-
-        print(_format_motionsensor_output(values))
-
-        time.sleep(0.1)
+    _motionsensor_test(motionsensor)
 
 @allow_kbinterrupt
 def adc_sensor_i2c() -> None:
@@ -106,16 +97,17 @@ def adc_controller_i2c() -> None:
 
 @allow_kbinterrupt
 def adc_triggers_motionsensor_sensor() -> None:
+    adc_threshold = 2.5
+    record_length = 1
+
     motionsensor = sensor.accel.LIS3DH.SPI(0, 0)
     motionsensor.set_datarate(5376)
     motionsensor.enable_axes()
 
-    adc = sensor.adc.ADS1015.I2C(0x48, 1)
+    adc = sensor.adc.ADS1015(0x48, 1)
 
     motionsensor.start()
     adc.start()
-    THRESH = 2.5
-    RECORD_TIME = 1
 
     while True:
         print("Waiting for ADC to go high before recording motion...")
@@ -123,10 +115,10 @@ def adc_triggers_motionsensor_sensor() -> None:
         while True:
             time.sleep(0.1)
             val = adc.read()
-            if val > THRESH:
+            if val > adc_threshold:
                 break
 
-        finish = time.time() + RECORD_TIME
+        finish = time.time() + record_length
         print(f'Detected high ADC!')
         while time.time() < finish:
             print(f'{_format_motionsensor_output(motionsensor.read())}')
@@ -134,6 +126,9 @@ def adc_triggers_motionsensor_sensor() -> None:
 
 @allow_kbinterrupt
 def adc_triggers_motionsensor_controller() -> None:
+    adc_threshold = 2.5
+    record_length = 1
+
     motionsensor = controller.accel.LIS3DH.SPI(0, 0)
     motionsensor.set_datarate(5376)
     motionsensor.enable_axes()
@@ -142,8 +137,6 @@ def adc_triggers_motionsensor_controller() -> None:
 
     motionsensor.start()
     adc.start()
-    THRESH = 2.5
-    RECORD_TIME = 1
 
     while True:
         print("Waiting for ADC to go high before recording motion...")
@@ -151,10 +144,10 @@ def adc_triggers_motionsensor_controller() -> None:
         while True:
             time.sleep(0.1)
             val = adc.read()
-            if val > THRESH:
+            if val > adc_threshold:
                 break
 
-        finish = time.time() + RECORD_TIME
+        finish = time.time() + record_length
         print(f'Detected high ADC!')
         while time.time() < finish:
             print(f'{_format_motionsensor_output(motionsensor.read())}')
