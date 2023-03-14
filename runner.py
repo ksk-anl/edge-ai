@@ -4,7 +4,7 @@ import argparse
 
 import script
 
-def start():
+def start() -> None:
     path = os.getcwd()
     context = daemon.DaemonContext(
         working_directory = path
@@ -13,7 +13,7 @@ def start():
     with context:
         script.main()
 
-def stop():
+def stop() -> None:
     os.system('pkill -x "python3 runner.py start"')
     os.system('pkill -x "python runner.py start"')
 
