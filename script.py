@@ -31,6 +31,54 @@ with open("config.json") as f:
     WINDOW_LENGTH = config['window_length']
     WAIT_TIME = config['wait_time']
 
+def _event_loop(motionsensor: LIS3DH, adc: ADS1015, conn: psycopg2.connection) -> None:
+    logging.info('Waiting for high ADC reading (Object Detection)')
+    while True:
+        time.sleep(ADC_MEASUREMENT_INTERVAL)
+        val = adc.read()
+        if val > ADC_THRESHOLD:
+            break
+    logging.info(f'Object detected. Waiting for {WAIT_TIME} seconds')
+
+    time.sleep(WAIT_TIME)
+
+    logging.info(f'Instructing motion sensor to read for {WINDOW_LENGTH} seconds')
+    values = motionsensor.read_for(WINDOW_LENGTH, timeformat = TIMEFORMAT)
+    results = [[row[0], math.sqrt(sum([x ** 2 for x in row[1]]))] for row in values]
+
+    logging.info(f'Finished reading motion sensor. {len(results)} lines recorded')
+
+    cursor = conn.cursor()
+
+    # write to section table, get section id
+    logging.info('Attempting to write to sections database')
+    cursor.execute('INSERT INTO sections (device_id, start_time) VALUES (%s, %s) RETURNING id;', (DEVICE_ID, results[0][0]))
+    conn.commit()
+
+    id = cursor.fetchone()[0]
+    logging.info(f'Finished writing to sections database (Section {id})')
+
+    # Arrange data into correct columns
+    logging.info('Preparing data for copy')
+    final = pd.DataFrame(data = {'section_id' : [id] * len(results),
+                                'time'       : [row[0] for row in results],
+                                'gravity'    : [row[1] for row in results]})
+
+    # Load data into a file-like object for copying
+    outfile = io.StringIO()
+    final.to_csv(outfile, header = False, index = False)
+
+    # Write data to gravities table
+    outfile.seek(0)
+
+    logging.info('Attempting to copy data to gravities table')
+    cursor.copy_from(outfile, 'gravities', sep = ',')
+    conn.commit()
+
+    logging.info('Finished writing to gravities table')
+
+    cursor.close()
+
 def main() -> None:
     # Preparing logger
     logging.basicConfig(filename = 'log.log',
@@ -62,54 +110,14 @@ def main() -> None:
 
         logging.info('Beginning measurement event loop')
 
-        for i in range(NUMBER_OF_MEASUREMENTS):
-            logging.info('Waiting for high ADC reading (Object Detection)')
+        if NUMBER_OF_MEASUREMENTS != 'infinite':
+            for i in range(NUMBER_OF_MEASUREMENTS):
+                _event_loop(motionsensor, adc, conn)
+                logging.info(f'Measurement {i + 1} of {NUMBER_OF_MEASUREMENTS} finished')
+        else:
+            logging.info('Measuring indefinitely...')
             while True:
-                time.sleep(ADC_MEASUREMENT_INTERVAL)
-                val = adc.read()
-                if val > ADC_THRESHOLD:
-                    break
-            logging.info(f'Object detected. Waiting for {WAIT_TIME} seconds')
-
-            time.sleep(WAIT_TIME)
-
-            logging.info(f'Instructing motion sensor to read for {WINDOW_LENGTH} seconds')
-            values = motionsensor.read_for(WINDOW_LENGTH, timeformat = TIMEFORMAT)
-            results = [[row[0], math.sqrt(sum([x ** 2 for x in row[1]]))] for row in values]
-
-            logging.info(f'Finished reading motion sensor. {len(results)} lines recorded')
-
-            cursor = conn.cursor()
-
-            # write to section table, get section id
-            logging.info('Attempting to write to sections database')
-            cursor.execute('INSERT INTO sections (device_id, start_time) VALUES (%s, %s) RETURNING id;', (DEVICE_ID, results[0][0]))
-            conn.commit()
-
-            id = cursor.fetchone()[0]
-            logging.info(f'Finished writing to sections database (Section {id})')
-
-            # Arrange data into correct columns
-            logging.info('Preparing data for copy')
-            final = pd.DataFrame(data = {'section_id' : [id] * len(results),
-                                        'time'       : [row[0] for row in results],
-                                        'gravity'    : [row[1] for row in results]})
-
-            # Load data into a file-like object for copying
-            outfile = io.StringIO()
-            final.to_csv(outfile, header = False, index = False)
-
-            # Write data to gravities table
-            outfile.seek(0)
-
-            logging.info('Attempting to copy data to gravities table')
-            cursor.copy_from(outfile, 'gravities', sep = ',')
-            conn.commit()
-
-            logging.info('Finished writing to gravities table')
-
-            cursor.close()
-            logging.info(f'Measurement {i + 1} finished')
+                _event_loop(motionsensor, adc, conn)
 
     except Exception as e:
         logging.exception(e)
