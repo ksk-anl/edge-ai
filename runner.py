@@ -2,19 +2,20 @@ import os
 import daemon
 import argparse
 
-import record_and_send
+import script
 
-def main():
+def start():
     path = os.getcwd()
     context = daemon.DaemonContext(
         working_directory = path
     )
 
     with context:
-        record_and_send.main()
+        script.main()
 
 def stop():
     os.system('pkill -x "python3 runner.py start"')
+    os.system('pkill -x "python runner.py start"')
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -24,6 +25,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.action == 'start':
-        main()
+        start()
     elif args.action == 'stop':
         stop()
