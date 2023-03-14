@@ -5,6 +5,7 @@ import json
 import logging
 
 import psycopg2
+import psycopg2.extensions
 import pandas as pd
 
 from edge_ai.controller.accel import LIS3DH
@@ -31,7 +32,7 @@ with open("config.json") as f:
     WINDOW_LENGTH = config['window_length']
     WAIT_TIME = config['wait_time']
 
-def _event_loop(motionsensor: LIS3DH, adc: ADS1015, conn: psycopg2.connection) -> None:
+def _event_loop(motionsensor: LIS3DH, adc: ADS1015, conn: psycopg2.extensions.connection) -> None:
     logging.info('Waiting for high ADC reading (Object Detection)')
     while True:
         time.sleep(ADC_MEASUREMENT_INTERVAL)
