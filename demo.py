@@ -82,9 +82,14 @@ def motionsensor_controller_run_for_spi() -> None:
     motioncontrol.start()
 
     print("Running for 10 seconds...")
+
     values = motioncontrol.read_for(10)
-    print("First 20 results:")
-    print([[val[0], _format_motionsensor_output(val[1])] for val in values][:20])
+
+    print(f"First 20 results out of {len(values)}:")
+
+    final_results = [[val[0], _format_motionsensor_output(val[1])] for val in values]
+    for line in final_results[:20]:
+        print(line)
 
 @allow_kbinterrupt
 def adc_controller_i2c() -> None:
