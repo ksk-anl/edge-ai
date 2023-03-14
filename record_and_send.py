@@ -37,8 +37,7 @@ def main() -> None:
                         format = '[%(asctime)s] %(levelname)s: %(message)s',
                         level = logging.INFO)
 
-    logging.info('='*100)
-    logging.info('Beginning of script.')
+    logging.info(f'{" Beginning of script. ":=^100}')
 
     try:
         # Initialize Sensors
