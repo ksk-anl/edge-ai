@@ -77,6 +77,16 @@ def motionsensor_controller_spi() -> None:
         time.sleep(0.1)
 
 @allow_kbinterrupt
+def motionsensor_controller_run_for_spi() -> None:
+    motioncontrol = controller.accel.LIS3DH.SPI(0, 0)
+    motioncontrol.start()
+
+    print("Running for 10 seconds...")
+    values = motioncontrol.read_for(10)
+    print("First 20 results:")
+    print([[val[0], _format_motionsensor_output(val[1])] for val in values][:20])
+
+@allow_kbinterrupt
 def adc_controller_i2c() -> None:
     adc_controller = controller.adc.ADS1015.I2C(0x48, 1)
     adc_controller.start()
@@ -158,10 +168,11 @@ def main():
         print("    LIS3DH Tests:")
         print("    5: Test Motionsensor (I2C)")
         print("    6: Test Motionsensor (SPI)")
+        print("    7: Test Motionsensor for 10 seconds (SPI)")
         print("    ADS1015 Tests:")
-        print("    7: Test ADC")
+        print("    8: Test ADC")
         print("Combined Tests:")
-        print("    8: ADC HIGH triggers motion sensor")
+        print("    9: ADC HIGH triggers motion sensor")
 
         print("\n")
         choice = input("Enter choice (q to quit): ")
@@ -178,8 +189,10 @@ def main():
         elif choice == '6':
             motionsensor_controller_spi()
         elif choice == '7':
-            adc_controller_i2c()
+            motionsensor_controller_run_for_spi()
         elif choice == '8':
+            adc_controller_i2c()
+        elif choice == '9':
             adc_triggers_motionsensor_controller()
 
 if __name__ == '__main__':

@@ -1,4 +1,5 @@
 {
+    "timeformat": "%Y-%m-%d %H:%M:%S.%f",
     "rdb_access": {
         "dbname": "edge",
         "user"  :   "postgres",
@@ -7,8 +8,6 @@
         "port": "5432"
     },
     "device_id": 1,
-    "adc_threshold": 2.5,
-    "measurements": 20,
     "motionsensor_spi": {
         "busnum": 0,
         "cs": 0
@@ -17,8 +16,9 @@
         "address": 72,
         "busnum": 1
     },
-    "window_length": 3,
-    "wait_time": 0.25,
+    "adc_threshold": 2.5,
     "adc_measurement_interval": 0.1,
-    "timeformat": "%Y-%m-%d %H:%M:%S.%f"
+    "number_measurements": 20,
+    "window_length": 3,
+    "wait_time": 0.25
 }

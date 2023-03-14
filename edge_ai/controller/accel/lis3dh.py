@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import time
+import datetime
 from multiprocessing.connection import Connection
 
 import edge_ai.sensor as sensor
@@ -70,8 +71,8 @@ class LIS3DH(BaseController):
     def enable_highpass(self, highpass: bool = True) -> None:
         self._highpass = highpass
 
-    def read_for(self, seconds: float = 0) -> list[list[float]]:
-        self._external_pipe.send(("read for", seconds))
+    def read_for(self, seconds: float = 0, timeformat: str = "%Y-%m-%d %H:%M:%S.%f") -> list[tuple[str, list[float]]]:
+        self._external_pipe.send(("read for", seconds, timeformat))
 
         return self._external_pipe.recv()
 
@@ -80,14 +81,14 @@ class LIS3DH(BaseController):
         self._y = y
         self._z = z
 
-    def _read_for(self, seconds: float) -> None:
+    def _read_for(self, seconds: float, timeformat: str) -> list[tuple[str, list[float]]]:
         start = time.time()
 
         results = []
 
         while time.time() < start + seconds:
             if self._sensor.new_data_available():
-                results.append(self._sensor.read())
+                results.append((f'{datetime.datetime.now():{timeformat}}', self._sensor.read()))
 
         return results
 
@@ -129,4 +130,4 @@ class LIS3DH(BaseController):
                 if message[0] == "read":
                     pipe.send(self._sensor.read())
                 elif message[0] == "read for":
-                    pipe.send(self._read_for(message[1]))
+                    pipe.send(self._read_for(message[1], message[2]))

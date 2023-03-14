@@ -13,20 +13,23 @@ from edge_ai.controller.adc import ADS1015
 with open("config.json") as f:
     config = json.load(f)
 
+    # Formatting constants
     TIMEFORMAT = config['timeformat']
 
-    RDBACCESS = config['rdb_access']
+    # Database Access constants
+    RDB_ACCESS = config['rdb_access']
     DEVICE_ID = config['device_id']
 
-    ADC_THRESHOLD = config['adc_threshold']
-    NUMBER_OF_MEASUREMENTS = config['measurements']
-
+    # Sensor Interface configurations
     MOTIONSENSOR = config['motionsensor_spi']
     ADC = config['adc_i2c']
 
-    MEASUREMENT_WINDOW = config['window_length']
-    WAIT_TIME = config['wait_time']
+    # Script variables
+    ADC_THRESHOLD = config['adc_threshold']
     ADC_MEASUREMENT_INTERVAL = config['adc_measurement_interval']
+    NUMBER_OF_MEASUREMENTS = config['number_measurements']
+    WINDOW_LENGTH = config['window_length']
+    WAIT_TIME = config['wait_time']
 
 def main():
 
@@ -40,7 +43,7 @@ def main():
 
     adc.start()
 
-    conn = psycopg2.connect(**RDBACCESS)
+    conn = psycopg2.connect(**RDB_ACCESS)
 
     for _ in range(NUMBER_OF_MEASUREMENTS):
         print('Waiting for blockage...')
@@ -53,14 +56,8 @@ def main():
 
         time.sleep(WAIT_TIME)
 
-        results = []
-
-        time_end = time.time() + MEASUREMENT_WINDOW
-        while time.time() <= time_end:
-            values = motionsensor.read()
-            final_value = math.sqrt(sum([x ** 2 for x in values]))
-
-            results.append([f'{datetime.datetime.now():{TIMEFORMAT}}', final_value])
+        values = motionsensor.read_for(WINDOW_LENGTH, timeformat = TIMEFORMAT)
+        results = [[row[0], math.sqrt(sum([x ** 2 for x in row[1]]))] for row in values]
 
         print(f'Recorded {len(results)} lines!')
 
