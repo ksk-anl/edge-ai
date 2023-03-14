@@ -2,7 +2,7 @@ import io
 import time
 import math
 import json
-import datetime
+import logging
 
 import psycopg2
 import pandas as pd
@@ -32,66 +32,94 @@ with open("config.json") as f:
     WAIT_TIME = config['wait_time']
 
 def main() -> None:
-    # Initialize Sensors
-    motionsensor = LIS3DH.SPI(**MOTIONSENSOR)
-    adc = ADS1015.I2C(**ADC)
+    # Preparing logger
+    logging.basicConfig(filename = 'scriptlog.log',
+                        format = '[%(asctime)s]%(levelname)s: %(message)s',
+                        level = logging.INFO)
 
-    # Configure sensors
-    motionsensor.set_datarate(5376)
-    motionsensor.enable_axes()
-    motionsensor.start()
+    logging.info('Beginning of script.')
+    try:
+        # Initialize Sensors
+        logging.info('Intializing sensors.')
+        motionsensor = LIS3DH.SPI(**MOTIONSENSOR)
+        adc = ADS1015.I2C(**ADC)
+        logging.info('Sensors Initialized.')
 
-    adc.start()
+        # Configure sensors
+        logging.info('Configuring sensors.')
+        motionsensor.set_datarate(5376)
+        motionsensor.enable_axes()
+        motionsensor.start()
 
-    # Initialize Database connection
-    conn = psycopg2.connect(**RDB_ACCESS)
+        adc.start()
+        logging.info('Sensors Configured.')
 
-    for _ in range(NUMBER_OF_MEASUREMENTS):
-        print('Waiting for blockage...')
+        # Initialize Database connection
+        logging.info('Connecting to Postgres Database.')
+        conn = psycopg2.connect(**RDB_ACCESS)
+        logging.info('Successfuly connected to Postgres Database.')
 
-        while True:
-            time.sleep(ADC_MEASUREMENT_INTERVAL)
-            val = adc.read()
-            if val > ADC_THRESHOLD:
-                break
+        logging.info('Beginning measurement event loop.')
+        for i in range(NUMBER_OF_MEASUREMENTS):
+            print('Waiting for blockage...')
 
-        time.sleep(WAIT_TIME)
+            logging.info('Waiting for high ADC reading. (Object Detection)')
+            while True:
+                time.sleep(ADC_MEASUREMENT_INTERVAL)
+                val = adc.read()
+                if val > ADC_THRESHOLD:
+                    break
+            logging.info(f'Object detected. Waiting for {WAIT_TIME} seconds.')
 
-        values = motionsensor.read_for(WINDOW_LENGTH, timeformat = TIMEFORMAT)
-        results = [[row[0], math.sqrt(sum([x ** 2 for x in row[1]]))] for row in values]
+            time.sleep(WAIT_TIME)
 
-        print(f'Recorded {len(results)} lines!')
+            logging.info(f'Instructing motion sensor to read for {WINDOW_LENGTH} seconds.')
+            values = motionsensor.read_for(WINDOW_LENGTH, timeformat = TIMEFORMAT)
+            results = [[row[0], math.sqrt(sum([x ** 2 for x in row[1]]))] for row in values]
 
-        cursor = conn.cursor()
+            print(f'Recorded {len(results)} lines!')
+            logging.info(f'Finished reading motion sensor. {len(results)} lines recorded.')
 
-        # write to section table, get section id
-        cursor.execute('INSERT INTO sections (device_id, start_time) VALUES (%s, %s) RETURNING id;', (DEVICE_ID, results[0][0]))
-        conn.commit()
+            cursor = conn.cursor()
 
-        print("Finished writing to sections table...")
+            # write to section table, get section id
+            logging.info('Attempting to write to sections database.')
+            cursor.execute('INSERT INTO sections (device_id, start_time) VALUES (%s, %s) RETURNING id;', (DEVICE_ID, results[0][0]))
+            conn.commit()
 
-        id = cursor.fetchone()[0]
+            logging.info('Finished writing to sections database.')
+            print("Finished writing to sections table...")
 
-        # Arrange data into correct columns
-        final = pd.DataFrame(data = {'section_id' : [id] * len(results),
-                                     'time'       : [row[0] for row in results],
-                                     'gravity'    : [row[1] for row in results]})
+            id = cursor.fetchone()[0]
 
-        # Load data into a file-like object for copying
-        outfile = io.StringIO()
-        final.to_csv(outfile, header = False, index = False)
+            # Arrange data into correct columns
+            final = pd.DataFrame(data = {'section_id' : [id] * len(results),
+                                        'time'       : [row[0] for row in results],
+                                        'gravity'    : [row[1] for row in results]})
 
-        # write data to gravities table
-        outfile.seek(0)
-        cursor.copy_from(outfile, 'gravities', sep = ',')
-        conn.commit()
+            # Load data into a file-like object for copying
+            outfile = io.StringIO()
+            final.to_csv(outfile, header = False, index = False)
 
-        print("Finished Sending to Database")
+            # write data to gravities table
+            outfile.seek(0)
 
-        cursor.close()
+            logging.info('Attempting to write to gravities database.')
+            cursor.copy_from(outfile, 'gravities', sep = ',')
+            conn.commit()
 
+            print("Finished Sending to Database")
+            logging.info('Finished writing to gravities database.')
+
+            cursor.close()
+            logging.info(f'Measurement {i + 1} finished.')
+    except Exception as e:
+        logging.exception(e)
+
+    logging.info('Shutting sensors down.')
     motionsensor.stop()
     adc.stop()
+    logging.info('Sensors shut down, ending script.')
 
 if __name__ == '__main__':
     main()
