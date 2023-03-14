@@ -34,10 +34,12 @@ with open("config.json") as f:
 def main() -> None:
     # Preparing logger
     logging.basicConfig(filename = 'scriptlog.log',
-                        format = '[%(asctime)s]%(levelname)s: %(message)s',
+                        format = '[%(asctime)s] %(levelname)s: %(message)s',
                         level = logging.INFO)
 
+    logging.info('='*100)
     logging.info('Beginning of script.')
+
     try:
         # Initialize Sensors
         logging.info('Intializing sensors.')
