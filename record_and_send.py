@@ -31,18 +31,19 @@ with open("config.json") as f:
     WINDOW_LENGTH = config['window_length']
     WAIT_TIME = config['wait_time']
 
-def main():
-
+def main() -> None:
+    # Initialize Sensors
     motionsensor = LIS3DH.SPI(**MOTIONSENSOR)
     adc = ADS1015.I2C(**ADC)
 
-    # Setup sensors
+    # Configure sensors
     motionsensor.set_datarate(5376)
     motionsensor.enable_axes()
     motionsensor.start()
 
     adc.start()
 
+    # Initialize Database connection
     conn = psycopg2.connect(**RDB_ACCESS)
 
     for _ in range(NUMBER_OF_MEASUREMENTS):
@@ -71,13 +72,13 @@ def main():
 
         id = cursor.fetchone()[0]
 
-        # write csv
+        # Arrange data into correct columns
         final = pd.DataFrame(data = {'section_id' : [id] * len(results),
                                      'time'       : [row[0] for row in results],
                                      'gravity'    : [row[1] for row in results]})
 
+        # Load data into a file-like object for copying
         outfile = io.StringIO()
-
         final.to_csv(outfile, header = False, index = False)
 
         # write data to gravities table
@@ -85,9 +86,12 @@ def main():
         cursor.copy_from(outfile, 'gravities', sep = ',')
         conn.commit()
 
-        print("Finished Sending to RDB")
+        print("Finished Sending to Database")
 
         cursor.close()
+
+    motionsensor.stop()
+    adc.stop()
 
 if __name__ == '__main__':
     main()
