@@ -16,6 +16,7 @@
         "address": 72,
         "busnum": 1
     },
+    "logfile": "log.log",
     "adc_threshold": 2.5,
     "adc_measurement_interval": 0.1,
     "number_measurements": 20,

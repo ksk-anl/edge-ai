@@ -26,6 +26,7 @@ with open("config.json") as f:
     ADC = config['adc_i2c']
 
     # Script variables
+    LOGFILE = config['logfile']
     ADC_THRESHOLD = config['adc_threshold']
     ADC_MEASUREMENT_INTERVAL = config['adc_measurement_interval']
     NUMBER_OF_MEASUREMENTS = config['number_measurements']
@@ -82,11 +83,11 @@ def _event_loop(motionsensor: LIS3DH, adc: ADS1015, conn: psycopg2.extensions.co
 
 def main() -> None:
     # Preparing logger
-    logging.basicConfig(filename = 'log.log',
+    logging.basicConfig(filename = LOGFILE,
                         format = '[%(asctime)s] %(levelname)s: %(message)s',
                         level = logging.INFO)
 
-    logging.info(f'{" Beginning of script ":=^100}')
+    logging.info(f'{" Beginning of script ":=^50}')
 
     try:
         # Initialize Sensors

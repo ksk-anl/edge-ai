@@ -5,19 +5,17 @@ import argparse
 
 import script
 
+DAEMONPIDFILE = 'daemon.pid'
+
 def start() -> None:
     path = os.getcwd()
     context = daemon.DaemonContext(
         working_directory = path,
-        pidfile = daemon.pidfile.TimeoutPIDLockFile(f'{path}/daemon.pid')
+        pidfile = daemon.pidfile.TimeoutPIDLockFile(f'{path}/{DAEMONPIDFILE}')
     )
 
     with context:
         script.main()
-
-def stop() -> None:
-    os.system('pkill -x "python3 runner.py start"')
-    os.system('pkill -x "python runner.py start"')
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -29,4 +27,4 @@ if __name__ == "__main__":
     if args.action == 'start':
         start()
     elif args.action == 'stop':
-        stop()
+        os.system(f'cat {DAEMONPIDFILE} | xargs kill')
