@@ -1,5 +1,6 @@
 import os
 import daemon
+import daemon.pidfile
 import argparse
 
 import script
@@ -7,7 +8,8 @@ import script
 def start() -> None:
     path = os.getcwd()
     context = daemon.DaemonContext(
-        working_directory = path
+        working_directory = path,
+        pidfile = daemon.pidfile.TimeoutPIDLockFile(f'{path}/daemon.pid')
     )
 
     with context:
