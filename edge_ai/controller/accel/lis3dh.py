@@ -115,7 +115,6 @@ class LIS3DH(BaseController):
         self._sensor = self._initialize_sensor()
 
         # Write any settings, config, etc
-        #TODO: Setup sensor configs from the controller
         self._sensor.set_datarate(5376)
         self._sensor.enable_axes()
         self._sensor.set_selftest('off')

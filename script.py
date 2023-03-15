@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import io
 import os
 import time
@@ -14,41 +16,25 @@ from edge_ai.controller.adc import ADS1015
 
 BASE_PATH = os.path.dirname(__file__)
 
-with open(f'{BASE_PATH}/config.json') as f:
-    config = json.load(f)
+def _parse_config() -> dict[str, any]:
+    # TODO: Parse and validate JSON contents
+    with open(f'{BASE_PATH}/config.json') as f:
+        config = json.load(f)
+    return config
 
-    # Formatting constants
-    TIMEFORMAT = config['timeformat']
-
-    # Database Access constants
-    RDB_ACCESS = config['rdb_access']
-    DEVICE_ID = config['device_id']
-
-    # Sensor Interface configurations
-    MOTIONSENSOR = config['motionsensor_spi']
-    ADC = config['adc_i2c']
-
-    # Script variables
-    LOGFILE = config['logfile']
-    ADC_THRESHOLD = config['adc_threshold']
-    ADC_MEASUREMENT_INTERVAL = config['adc_measurement_interval']
-    NUMBER_OF_MEASUREMENTS = config['number_measurements']
-    WINDOW_LENGTH = config['window_length']
-    WAIT_TIME = config['wait_time']
-
-def _event_loop(motionsensor: LIS3DH, adc: ADS1015, conn: psycopg2.extensions.connection) -> None:
+def _event_loop(motionsensor: LIS3DH, adc: ADS1015, conn: psycopg2.extensions.connection, config: dict[str, any]) -> None:
     logging.info('Waiting for high ADC reading (Object Detection)')
     while True:
-        time.sleep(ADC_MEASUREMENT_INTERVAL)
+        time.sleep(config['adc_measurement_interval'])
         val = adc.read()
-        if val > ADC_THRESHOLD:
+        if val > config['adc_threshold']:
             break
-    logging.info(f'Object detected. Waiting for {WAIT_TIME} seconds')
+    logging.info(f'Object detected. Waiting for {config["wait_time"]} seconds')
 
-    time.sleep(WAIT_TIME)
+    time.sleep(config['wait_time'])
 
-    logging.info(f'Instructing motion sensor to read for {WINDOW_LENGTH} seconds')
-    values = motionsensor.read_for(WINDOW_LENGTH, timeformat = TIMEFORMAT)
+    logging.info(f'Instructing motion sensor to read for {config["window_length"]} seconds')
+    values = motionsensor.read_for(config['window_length'], timeformat = config["timeformat"])
     results = [[row[0], math.sqrt(sum([x ** 2 for x in row[1]]))] for row in values]
 
     logging.info(f'Finished reading motion sensor. {len(results)} lines recorded')
@@ -57,7 +43,7 @@ def _event_loop(motionsensor: LIS3DH, adc: ADS1015, conn: psycopg2.extensions.co
 
     # write to section table, get section id
     logging.info('Attempting to write to sections database')
-    cursor.execute('INSERT INTO sections (device_id, start_time) VALUES (%s, %s) RETURNING id;', (DEVICE_ID, results[0][0]))
+    cursor.execute('INSERT INTO sections (device_id, start_time) VALUES (%s, %s) RETURNING id;', (config["device_id"], results[0][0]))
     conn.commit()
 
     id = cursor.fetchone()[0]
@@ -85,8 +71,10 @@ def _event_loop(motionsensor: LIS3DH, adc: ADS1015, conn: psycopg2.extensions.co
     cursor.close()
 
 def main() -> None:
+    config = _parse_config()
+
     # Preparing logger
-    logging.basicConfig(filename = f'{BASE_PATH}/{LOGFILE}',
+    logging.basicConfig(filename = f'{BASE_PATH}/{config["logfile"]}',
                         format = '[%(asctime)s] %(levelname)s: %(message)s',
                         level = logging.INFO)
 
@@ -95,8 +83,8 @@ def main() -> None:
     try:
         # Initialize Sensors
         logging.info('Intializing sensors')
-        motionsensor = LIS3DH.SPI(**MOTIONSENSOR)
-        adc = ADS1015.I2C(**ADC)
+        motionsensor = LIS3DH.SPI(**config['motionsensor_spi'])
+        adc = ADS1015.I2C(**config['adc_i2c'])
         logging.info('Sensors Initialized')
 
         # Configure sensors
@@ -110,19 +98,19 @@ def main() -> None:
 
         # Initialize Database connection
         logging.info('Connecting to Postgres Database')
-        conn = psycopg2.connect(**RDB_ACCESS)
+        conn = psycopg2.connect(**config['rdb_access'])
         logging.info('Successfuly connected to Postgres Database')
 
         logging.info('Beginning measurement event loop')
 
-        if NUMBER_OF_MEASUREMENTS != 'infinite':
-            for i in range(NUMBER_OF_MEASUREMENTS):
-                _event_loop(motionsensor, adc, conn)
-                logging.info(f'Measurement {i + 1} of {NUMBER_OF_MEASUREMENTS} finished')
+        if config['number_measurements'] != 'infinite':
+            for i in range(config['number_measurements']):
+                _event_loop(motionsensor, adc, conn, config)
+                logging.info(f'Measurement {i + 1} of {config["number_measurements"]} finished')
         else:
             logging.info('Measuring indefinitely...')
             while True:
-                _event_loop(motionsensor, adc, conn)
+                _event_loop(motionsensor, adc, conn, config)
 
     except Exception as e:
         logging.exception(e)
