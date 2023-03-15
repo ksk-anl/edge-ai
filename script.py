@@ -1,4 +1,5 @@
 import io
+import os
 import time
 import math
 import json
@@ -11,7 +12,9 @@ import pandas as pd
 from edge_ai.controller.accel import LIS3DH
 from edge_ai.controller.adc import ADS1015
 
-with open("config.json") as f:
+BASE_PATH = os.path.dirname(__file__)
+
+with open(f'{BASE_PATH}/config.json') as f:
     config = json.load(f)
 
     # Formatting constants
@@ -83,7 +86,7 @@ def _event_loop(motionsensor: LIS3DH, adc: ADS1015, conn: psycopg2.extensions.co
 
 def main() -> None:
     # Preparing logger
-    logging.basicConfig(filename = LOGFILE,
+    logging.basicConfig(filename = f'{BASE_PATH}/{LOGFILE}',
                         format = '[%(asctime)s] %(levelname)s: %(message)s',
                         level = logging.INFO)
 

@@ -8,7 +8,7 @@ import script
 DAEMONPIDFILE = 'daemon.pid'
 
 def start() -> None:
-    path = os.getcwd()
+    path = os.path.dirname(__file__)
     context = daemon.DaemonContext(
         working_directory = path,
         pidfile = daemon.pidfile.TimeoutPIDLockFile(f'{path}/{DAEMONPIDFILE}')
@@ -27,4 +27,5 @@ if __name__ == "__main__":
     if args.action == 'start':
         start()
     elif args.action == 'stop':
-        os.system(f'cat {DAEMONPIDFILE} | xargs kill')
+        path = os.path.dirname(__file__)
+        os.system(f'cat {path}/{DAEMONPIDFILE} | xargs kill')
