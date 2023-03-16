@@ -2,6 +2,10 @@ from abc import ABC, abstractmethod
 
 class BaseBus(ABC):
     @abstractmethod
+    def start(self) -> None:
+        ...
+
+    @abstractmethod
     def stop(self) -> None:
         ...
 
