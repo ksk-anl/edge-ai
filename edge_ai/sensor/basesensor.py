@@ -7,7 +7,7 @@ from ..bus import BaseBus
 class BaseSensor(ABC):
     def __init__(self, bus: Type[BaseBus]) -> None:
         self._bus = bus
-        self._running = True
+        self._running = False
 
         self.start()
 
