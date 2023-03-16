@@ -14,7 +14,8 @@ class BaseController(ABC):
     def __init__(self) -> None:
         self._external_pipe, self._internal_pipe = mp.Pipe(True)
         self._process = mp.Process(target = self._internal_loop,
-                                   args = (self._internal_pipe, ))
+                                   args = (self._internal_pipe, ),
+                                   daemon = True)
 
     def start(self) -> None:
         self._process.start()
@@ -27,7 +28,7 @@ class BaseController(ABC):
         self._process.kill()
 
     def read(self) -> Any:
-        self._external_pipe.send("read")
+        self._external_pipe.send(("read", ))
 
         return self._external_pipe.recv()
 
