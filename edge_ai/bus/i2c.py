@@ -1,5 +1,6 @@
 import smbus2
 
+from typing import List
 from .basebus import BaseBus
 
 class I2C(BaseBus):
@@ -27,5 +28,11 @@ class I2C(BaseBus):
     def write_register(self, register: int, value: int) -> None:
         self._get_bus().write_byte_data(self._address, register, value)
 
+    def write_register_list(self, register: int, value: List[int]) -> None:
+        self._get_bus().write_i2c_block_data(self._address, register, value)
+
     def read_register(self, register: int) -> int:
         return self._get_bus().read_byte_data(self._address, register)
+
+    def read_register_list(self, register: int, length: int) -> List[int]:
+        return self._get_bus().read_i2c_block_data(self._address, register, length)
