@@ -15,14 +15,18 @@ class ADS1015(BaseSensor):
 
     # Multiplexer (channel comparator values)
     # bits [14:12] on config register
-    CH_0_MINUS_1 = 0b000 #default
-    CH_0_MINUS_3 = 0b001
-    CH_1_MINUS_3 = 0b010
-    CH_2_MINUS_3 = 0b011
-    CH_0 = 0b100
-    CH_1 = 0b101
-    CH_2 = 0b110
-    CH_3 = 0b111
+    CH_COMP = {
+        (0, 1): 0b000, #default
+        (0, 3): 0b001,
+        (1, 3): 0b010,
+        (2, 3): 0b011
+    }
+    CH_SINGLE = {
+        0: 0b100,
+        1: 0b101,
+        2: 0b110,
+        3: 0b111
+    }
 
     # Full Scale Range Values
     # Volt: bit setting
@@ -83,6 +87,15 @@ class ADS1015(BaseSensor):
                                              busnum = self._busnum)
         # defaults
         self._adc_gain = 1
+        self._read_diff = (0, 1)
+        self._read_single = None
+        self._full_range = 2.048
+        self._continuous_mode = False
+        self._datarate = 1600
+        self._traditional_comp = True
+        self._comp_polarity = 0
+        self._latching_comp = False
+        self._comp_queue = 0
 
     @staticmethod
     def I2C(address: int = 0x48, busnum: int = 1) -> ADS1015:
