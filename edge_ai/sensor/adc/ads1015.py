@@ -102,6 +102,48 @@ class ADS1015(BaseSensor):
         bus = I2C(address, busnum)
         return ADS1015(bus)
 
+    def set_differential(self, channel1: int = 0, channel2: int = 1) -> None:
+        # TODO: checks
+        cfg = self._bus.read_register_list(self.CONFIG_REGISTER)
+
+        cfg[0] |= (self.CH_COMP[(channel1, channel2)] << 4)
+
+        self._bus.write_register_list(self.CONFIG_REGISTER, cfg)
+
+    def set_single(self, channel: int = 0) -> None:
+        # TODO: checks
+        cfg = self._bus.read_register_list(self.CONFIG_REGISTER)
+
+        cfg[0] |= (self.CH_SINGLE[channel] << 4)
+
+        self._bus.write_register_list(self.CONFIG_REGISTER, cfg)
+
+    def set_data_range(self, full_scale_range: float = 2.048) -> None:
+        # TODO: checks
+        cfg = self._bus.read_register_list(self.CONFIG_REGISTER)
+
+        cfg[0] |= (self.RANGES[full_scale_range] << 1)
+
+        self._bus.write_register_list(self.CONFIG_REGISTER, cfg)
+
+    def set_continuous(self, continuous: bool = True) -> None:
+        # TODO: checks
+        cfg = self._bus.read_register_list(self.CONFIG_REGISTER)
+
+        cfg[0] |= 1 if continuous else 0
+
+        self._bus.write_register_list(self.CONFIG_REGISTER, cfg)
+
+
+    def set_data_rate(self, data_rate: int = 1600) -> None:
+        # TODO: checks
+        cfg = self._bus.read_register_list(self.CONFIG_REGISTER)
+
+        cfg[1] |= (self.DATARATES[data_rate] << 5)
+
+        self._bus.write_register_list(self.CONFIG_REGISTER, cfg)
+
+
     def start_single(self, channel: int = 0) -> None:
         self._adc.start_adc(channel, gain = self._adc_gain)
 
