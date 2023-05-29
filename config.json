@@ -9,8 +9,8 @@
     },
     "rts_url": "",
     "rts_access" : {
-        "username": "admin",
-        "password": "changeit"
+        "username": "",
+        "password": ""
     },
     "device_id": 1,
     "motionsensor_spi": {
