@@ -6,6 +6,8 @@ import time
 import math
 import json
 import logging
+import requests
+from requests.auth import HTTPBasicAuth
 
 import psycopg2
 import psycopg2.extensions
@@ -67,6 +69,19 @@ def _event_loop(motionsensor: LIS3DH, adc: ADS1015, conn: psycopg2.extensions.co
     conn.commit()
 
     logging.info('Finished writing to gravities table')
+
+    res = None
+    if config['rts_url'] != '':
+        res = requests.post(config['rts_url'],
+                    auth = HTTPBasicAuth(**config['rts_access']),
+                    json = {
+                            'data':[{'section_id' : id}]
+                            }
+                    )
+
+        logging.info(f'Wrote to RTS with response {res}')
+    else:
+        logging.warning('No RTS URL set. Will not attempt to POST.')
 
     cursor.close()
 
