@@ -1,11 +1,16 @@
 {
     "timeformat": "%Y-%m-%d %H:%M:%S.%f",
     "rdb_access": {
-        "dbname": "edge",
-        "user"  :   "postgres",
-        "password": "postgres",
-        "host": "192.168.0.38",
-        "port": "5432"
+        "dbname": "",
+        "user": "",
+        "password": "",
+        "host": "",
+        "port": ""
+    },
+    "rts_url": "",
+    "rts_access" : {
+        "username": "admin",
+        "password": "changeit"
     },
     "device_id": 1,
     "motionsensor_spi": {
@@ -21,5 +26,7 @@
     "adc_measurement_interval": 0.1,
     "number_measurements": 20,
     "window_length": 3,
-    "wait_time": 0.25
+    "wait_time": 2
 }
+
+
