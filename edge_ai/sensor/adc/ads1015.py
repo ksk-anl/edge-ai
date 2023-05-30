@@ -117,6 +117,7 @@ class ADS1015(BaseSensor):
         # TODO: checks
         cfg = self._bus.read_register_list(self.CONFIG_REGISTER, 2)
 
+        cfg[0] &= 10001111
         cfg[0] |= (self.CH_COMP[(channel1, channel2)] << 4)
 
         self._bus.write_register_list(self.CONFIG_REGISTER, cfg)
@@ -125,6 +126,7 @@ class ADS1015(BaseSensor):
         # TODO: checks
         cfg = self._bus.read_register_list(self.CONFIG_REGISTER, 2)
 
+        cfg[0] &= 10001111 # TODO: change these to xor
         cfg[0] |= (self.CH_SINGLE[channel] << 4)
 
         self._bus.write_register_list(self.CONFIG_REGISTER, cfg)
@@ -133,6 +135,7 @@ class ADS1015(BaseSensor):
         # TODO: checks
         cfg = self._bus.read_register_list(self.CONFIG_REGISTER, 2)
 
+        cfg[0] &= 11110001
         cfg[0] |= (self.RANGES[full_scale_range] << 1)
 
         self._bus.write_register_list(self.CONFIG_REGISTER, cfg)
@@ -141,6 +144,7 @@ class ADS1015(BaseSensor):
         # TODO: checks
         cfg = self._bus.read_register_list(self.CONFIG_REGISTER, 2)
 
+        cfg[0] &= 11111110
         cfg[0] |= 0 if continuous else 1
 
         self._bus.write_register_list(self.CONFIG_REGISTER, cfg)
@@ -150,6 +154,7 @@ class ADS1015(BaseSensor):
         # TODO: checks
         cfg = self._bus.read_register_list(self.CONFIG_REGISTER, 2)
 
+        cfg[1] &= 0b11111000
         cfg[1] |= (self.DATARATES[data_rate] << 5)
 
         self._bus.write_register_list(self.CONFIG_REGISTER, cfg)
