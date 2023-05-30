@@ -47,7 +47,7 @@ def motionsensor_spi() -> None:
 
 @allow_kbinterrupt
 def adc_sensor_i2c() -> None:
-    adc = sensor.adc.ADS1015(address = 0x48, busnum = 1)
+    adc = sensor.adc.ADS1015.I2C(address = 0x48, busnum = 1)
     adc.start_diff()
 
     print("Outputting ADC output, Ctrl + C to stop:")
