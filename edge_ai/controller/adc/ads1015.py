@@ -23,7 +23,7 @@ class ADS1015(BaseController):
         return controller
 
     def _initialize_sensor(self)-> sensor.adc.ADS1015:
-        return sensor.adc.ADS1015(**self._busconfig)
+        return sensor.adc.ADS1015.I2C(**self._busconfig)
 
     def _internal_loop(self, pipe: Connection) -> None:
         # this is a loop that manages the running of the sensor.
@@ -43,4 +43,4 @@ class ADS1015(BaseController):
 
                 # if pipe says "read", send out the data into the pipe
                 if message[0] == "read":
-                    pipe.send(adc.read_diff(0))
+                    pipe.send(adc.read(0))
