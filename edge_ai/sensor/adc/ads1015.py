@@ -159,24 +159,36 @@ class ADS1015(BaseSensor):
 
         self._bus.write_register_list(self.CONFIG_REGISTER, cfg)
 
-    # TODO: begin single read mode
-    def start_single_channel(self, channel: int = 0) -> None:
-        # TODO: checks
-        self.set_single_channel(channel)
-        self.start()
+    # def start_single_channel(self, channel: int = 0) -> None:
+    #     # TODO: checks
+    #     self.set_single_channel(channel)
+    #     self.start()
 
-    def start_differential_mode(self, channel1: int = 0, channel2: int = 1) -> None:
-        # TODO: checks
-        self.set_differential_mode(channel1, channel2)
-        self.start()
+    # def start_differential_mode(self, channel1: int = 0, channel2: int = 1) -> None:
+    #     # TODO: checks
+    #     self.set_differential_mode(channel1, channel2)
+    #     self.start()
 
     # starts continuous conversion
-    def start(self) -> None:
+    def start_continuous(self) -> None:
+        cfg = self._bus.read_register_list(self.CONFIG_REGISTER, 2)
+
+        cfg[0] |= 0x80
+
+        self._bus.write_register_list(self.CONFIG_REGISTER, cfg)
+
+    def start_singleshot(self) -> None:
         cfg = self._bus.read_register_list(self.CONFIG_REGISTER, 2)
 
         cfg[0] |= 0x81
 
         self._bus.write_register_list(self.CONFIG_REGISTER, cfg)
+
+    def start(self) -> None:
+        if self._continuous_mode:
+            self.start_continuous()
+        else:
+            self.start_singleshot()
 
     # TODO: stop conversions
     def stop(self) -> None:
