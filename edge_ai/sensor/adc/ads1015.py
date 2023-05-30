@@ -141,7 +141,7 @@ class ADS1015(BaseSensor):
         # TODO: checks
         cfg = self._bus.read_register_list(self.CONFIG_REGISTER, 2)
 
-        cfg[0] |= 1 if continuous else 0
+        cfg[0] |= 0 if continuous else 1
 
         self._bus.write_register_list(self.CONFIG_REGISTER, cfg)
 
@@ -178,7 +178,7 @@ class ADS1015(BaseSensor):
 
     def read(self) -> float:
         raw_diff = self._bus.read_register_list(self.CONVERSION_REGISTER, 2)
-        final = self._combine_bytes(raw_diff[0], raw_diff[1], 16)
+        final = self._combine_bytes(raw_diff[1], raw_diff[0], 16)
 
         print(f"{[bin(x) for x in raw_diff]} -> {bin(final)})")
 
