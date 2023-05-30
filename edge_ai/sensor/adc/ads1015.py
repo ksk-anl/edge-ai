@@ -105,8 +105,8 @@ class ADS1015(BaseSensor):
 
         #defaults
         adc.set_continuous(adc._continuous_mode)
-        adc.set_data_range(adc.set_data_range)
-        adc.set_data_rate(adc.set_data_range)
+        adc.set_data_range(adc._full_range)
+        adc.set_data_rate(adc._datarate)
         adc.start()
 
         # return ADS1015(bus)
