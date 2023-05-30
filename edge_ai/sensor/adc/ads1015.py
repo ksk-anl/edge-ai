@@ -152,10 +152,11 @@ class ADS1015(BaseSensor):
     # def start_diff(self, differential: int = 0) -> None:
     #     self._adc.start_adc_difference(differential, gain = self._adc_gain)
 
+    # starts continuous conversion
     def start(self) -> None:
         cfg = self._bus.read_register_list(self.CONFIG_REGISTER, 2)
 
-        cfg[0] |= 0x80
+        cfg[0] |= 0x81
 
         self._bus.write_register_list(self.CONFIG_REGISTER, cfg)
 
