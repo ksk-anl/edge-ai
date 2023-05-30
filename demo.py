@@ -49,6 +49,7 @@ def motionsensor_spi() -> None:
 def adc_sensor_i2c() -> None:
     adc = sensor.adc.ADS1015.I2C(address = 0x48, busnum = 1)
     adc.start_differential_mode()
+    adc.set_data_range(4.096)
 
     print("Outputting ADC output, Ctrl + C to stop:")
     while True:
