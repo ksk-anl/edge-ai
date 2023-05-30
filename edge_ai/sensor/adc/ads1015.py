@@ -83,8 +83,8 @@ class ADS1015(BaseSensor):
         super().__init__(bus)
 
         # set up the bus
-        self._adc = Adafruit_ADS1x15.ADS1015(address = self._address,
-                                             busnum = self._busnum)
+        # self._adc = Adafruit_ADS1x15.ADS1015(address = self._address,
+        #                                      busnum = self._busnum)
         # defaults
         self._adc_gain = 1
         self._read_diff = (0, 1)
