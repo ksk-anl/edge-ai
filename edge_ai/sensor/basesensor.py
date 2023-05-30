@@ -14,10 +14,10 @@ class BaseSensor(ABC):
     @staticmethod
     def _combine_bytes(high: int, low: int, bits: int) -> int:
         shift = 16 - bits
-        high = high << 8 - shift
-        low = low >> shift
+        high = high << 8
+        num = high | low
 
-        return high | low
+        return num >> shift
 
 
     def start(self) -> None:
