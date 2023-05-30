@@ -83,8 +83,8 @@ class ADS1015(BaseSensor):
         super().__init__(bus)
 
         # set up the bus
-        # self._adc = Adafruit_ADS1x15.ADS1015(address = self._address,
-        #                                      busnum = self._busnum)
+        self._adc = Adafruit_ADS1x15.ADS1015(address = self._address,
+                                             busnum = self._busnum)
         # defaults
         self._adc_gain = 1
         self._read_diff = (0, 1)
@@ -104,7 +104,7 @@ class ADS1015(BaseSensor):
 
     def set_differential(self, channel1: int = 0, channel2: int = 1) -> None:
         # TODO: checks
-        cfg = self._bus.read_register_list(self.CONFIG_REGISTER)
+        cfg = self._bus.read_register_list(self.CONFIG_REGISTER, 2)
 
         cfg[0] |= (self.CH_COMP[(channel1, channel2)] << 4)
 
@@ -112,7 +112,7 @@ class ADS1015(BaseSensor):
 
     def set_single(self, channel: int = 0) -> None:
         # TODO: checks
-        cfg = self._bus.read_register_list(self.CONFIG_REGISTER)
+        cfg = self._bus.read_register_list(self.CONFIG_REGISTER, 2)
 
         cfg[0] |= (self.CH_SINGLE[channel] << 4)
 
@@ -120,7 +120,7 @@ class ADS1015(BaseSensor):
 
     def set_data_range(self, full_scale_range: float = 2.048) -> None:
         # TODO: checks
-        cfg = self._bus.read_register_list(self.CONFIG_REGISTER)
+        cfg = self._bus.read_register_list(self.CONFIG_REGISTER, 2)
 
         cfg[0] |= (self.RANGES[full_scale_range] << 1)
 
@@ -128,7 +128,7 @@ class ADS1015(BaseSensor):
 
     def set_continuous(self, continuous: bool = True) -> None:
         # TODO: checks
-        cfg = self._bus.read_register_list(self.CONFIG_REGISTER)
+        cfg = self._bus.read_register_list(self.CONFIG_REGISTER, 2)
 
         cfg[0] |= 1 if continuous else 0
 
@@ -137,33 +137,39 @@ class ADS1015(BaseSensor):
 
     def set_data_rate(self, data_rate: int = 1600) -> None:
         # TODO: checks
-        cfg = self._bus.read_register_list(self.CONFIG_REGISTER)
+        cfg = self._bus.read_register_list(self.CONFIG_REGISTER, 2)
 
         cfg[1] |= (self.DATARATES[data_rate] << 5)
 
         self._bus.write_register_list(self.CONFIG_REGISTER, cfg)
 
 
-    def start_single(self, channel: int = 0) -> None:
-        self._adc.start_adc(channel, gain = self._adc_gain)
+    # TODO: begin single read mode
+    # def start_single(self, channel: int = 0) -> None:
+    #     self._adc.start_adc(channel, gain = self._adc_gain)
 
-    def start_diff(self, differential: int = 0) -> None:
-        self._adc.start_adc_difference(differential, gain = self._adc_gain)
+    # TODO: begin diff read mode
+    # def start_diff(self, differential: int = 0) -> None:
+    #     self._adc.start_adc_difference(differential, gain = self._adc_gain)
 
+    # TODO: stop conversions
     def stop(self) -> None:
+        # set config register to default
         self._adc.stop_adc()
 
     def read(self) -> float:
-        raw_diff = self._adc.get_last_result()
-        return self._sensor_raw_value_to_v(raw_diff)
+        raw_diff = self._bus.read_register_list(self.CONVERSION_REGISTER, 2)
+        final = self._combine_bytes(raw_diff[1], raw_diff[0])
 
-    def read_single(self, channel: int = 0) -> float:
-        raw = self._adc.read_adc(channel)
-        return self._sensor_raw_value_to_v(raw)
+        return self._sensor_raw_value_to_v(final)
 
-    def read_diff(self, differential: int = 0) -> float:
-        raw = self._adc.read_adc_difference(differential)
-        return self._sensor_raw_value_to_v(raw)
+    # def read_single(self, channel: int = 0) -> float:
+    #     raw = self._adc.read_adc(channel)
+    #     return self._sensor_raw_value_to_v(raw)
+
+    # def read_diff(self, differential: int = 0) -> float:
+    #     raw = self._adc.read_adc_difference(differential)
+    #     return self._sensor_raw_value_to_v(raw)
 
     # TODO: ADC gain setters
     @staticmethod

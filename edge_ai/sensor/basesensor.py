@@ -11,6 +11,14 @@ class BaseSensor(ABC):
 
         self.start()
 
+    def _combine_bytes(high: int, low: int, bits: int) -> int:
+        shift = 16 - bits
+        high = high << shift
+        low = low >> shift
+
+        return high | low
+
+
     def start(self) -> None:
         if self._running:
             return
