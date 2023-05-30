@@ -90,7 +90,7 @@ class ADS1015(BaseSensor):
         self._read_diff = (0, 1)
         self._read_single = None
         self._full_range = 2.048
-        self._continuous_mode = False
+        self._continuous_mode = True
         self._datarate = 1600
         self._traditional_comp = True
         self._comp_polarity = 0
@@ -100,7 +100,18 @@ class ADS1015(BaseSensor):
     @staticmethod
     def I2C(address: int = 0x48, busnum: int = 1) -> ADS1015:
         bus = I2C(address, busnum)
-        return ADS1015(bus)
+
+        adc = ADS1015(bus)
+
+        #defaults
+        adc.set_continuous(adc._continuous_mode)
+        adc.set_data_range(adc.set_data_range)
+        adc.set_data_rate(adc.set_data_range)
+        adc.start()
+
+        # return ADS1015(bus)
+        return adc
+
 
     def set_differential(self, channel1: int = 0, channel2: int = 1) -> None:
         # TODO: checks
