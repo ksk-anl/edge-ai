@@ -200,4 +200,10 @@ class ADS1015(BaseSensor):
     # TODO: ADC gain setters
     @staticmethod
     def _sensor_raw_value_to_v(value: int) -> float:
-        return (value * 4.096 * 2) / (2 ** 12)
+        # convert two's complement
+
+        max_value = 2 ** 12
+        if value > max_value:
+            value -= max_value
+
+        return (value * 4.096 * 2) / (max_value)
