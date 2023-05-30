@@ -104,7 +104,7 @@ class ADS1015(BaseSensor):
         adc = ADS1015(bus)
 
         #defaults
-        adc.start()
+        adc.start_adc()
         adc.set_continuous(adc._continuous_mode)
         adc.set_data_range(adc._full_range)
         adc.set_data_rate(adc._datarate)
@@ -184,7 +184,7 @@ class ADS1015(BaseSensor):
 
         self._bus.write_register_list(self.CONFIG_REGISTER, cfg)
 
-    def start(self) -> None:
+    def start_adc(self) -> None:
         if self._continuous_mode:
             self.start_continuous()
         else:

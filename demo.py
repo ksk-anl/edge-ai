@@ -108,8 +108,8 @@ def adc_triggers_motionsensor_sensor() -> None:
 
     adc = sensor.adc.ADS1015(0x48, 1)
 
-    motionsensor.start()
-    adc.start()
+    motionsensor.start_adc()
+    adc.start_adc()
 
     while True:
         print("Waiting for ADC to go high before recording motion...")
