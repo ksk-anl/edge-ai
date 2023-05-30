@@ -161,6 +161,8 @@ class ADS1015(BaseSensor):
         raw_diff = self._bus.read_register_list(self.CONVERSION_REGISTER, 2)
         final = self._combine_bytes(raw_diff[1], raw_diff[0], 16)
 
+        print(f"{[bin(x) for x in raw_diff]} -> {bin(final)})")
+
         return self._sensor_raw_value_to_v(final)
 
     # def read_single(self, channel: int = 0) -> float:
