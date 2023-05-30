@@ -200,4 +200,4 @@ class ADS1015(BaseSensor):
     # TODO: ADC gain setters
     @staticmethod
     def _sensor_raw_value_to_v(value: int) -> float:
-        return value * 4.096 * 2 / 4096
+        return (value * 4.096 * 2) / (2 ** 12)
