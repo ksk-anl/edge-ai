@@ -183,7 +183,7 @@ class ADS1015(BaseSensor):
 
     def read(self) -> float:
         raw_diff = self._bus.read_register_list(self.CONVERSION_REGISTER, 2)
-        final = self._combine_bytes(raw_diff[1], raw_diff[0], 16)
+        final = self._combine_bytes(raw_diff[0], raw_diff[1], 16)
 
         print(f"{[bin(x) for x in raw_diff]} -> {bin(final)})")
 
@@ -201,7 +201,6 @@ class ADS1015(BaseSensor):
     @staticmethod
     def _sensor_raw_value_to_v(value: int) -> float:
         # convert two's complement
-
         max_value = 2 ** 12
         if value > max_value:
             value -= max_value
