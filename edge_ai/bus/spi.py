@@ -2,8 +2,11 @@ import spidev
 
 from .basebus import BaseBus
 
+
 class SPI(BaseBus):
-    def __init__(self, busnum: int, cs: int, maxspeed: int = 1_000_000, mode: int = 3) -> None:
+    def __init__(
+        self, busnum: int, cs: int, maxspeed: int = 1_000_000, mode: int = 3
+    ) -> None:
         self._busnum = busnum
         self._cs = cs
         self._maxspeed = maxspeed
@@ -39,4 +42,4 @@ class SPI(BaseBus):
 
         self._get_bus().xfer2(to_write)
 
-    #TODO: Multibyte version?
+    # TODO: Multibyte version?

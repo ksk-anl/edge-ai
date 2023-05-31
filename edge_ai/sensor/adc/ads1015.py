@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from typing import Type
 
+from ...bus import I2C, BaseBus
 from ..basesensor import BaseSensor
-from ...bus import BaseBus, I2C
+
 
 class ADS1015(BaseSensor):
     CONVERSION_REGISTER = 0x00
@@ -15,18 +16,8 @@ class ADS1015(BaseSensor):
 
     # Multiplexer (channel comparator values)
     # bits [14:12] on config register
-    CH_COMP = {
-        (0, 1): 0b000, #default
-        (0, 3): 0b001,
-        (1, 3): 0b010,
-        (2, 3): 0b011
-    }
-    CH_SINGLE = {
-        0: 0b100,
-        1: 0b101,
-        2: 0b110,
-        3: 0b111
-    }
+    CH_COMP = {(0, 1): 0b000, (0, 3): 0b001, (1, 3): 0b010, (2, 3): 0b011}  # default
+    CH_SINGLE = {0: 0b100, 1: 0b101, 2: 0b110, 3: 0b111}
 
     # Full Scale Range Values
     # Volt: bit setting
@@ -34,42 +25,42 @@ class ADS1015(BaseSensor):
     RANGES = {
         6.144: 0b000,
         4.096: 0b001,
-        2.048: 0b010, #default
+        2.048: 0b010,  # default
         1.024: 0b011,
         0.512: 0b100,
-        0.256: 0b101
+        0.256: 0b101,
     }
 
     # Operating Mode
     # bit 8 on config register
     MODE_CONTINUOUS = 0b0
-    MODE_SINGLE = 0b1 # default
+    MODE_SINGLE = 0b1  # default
 
     # Data Rate Setting
     # bits 7:5 on config register
     DATARATES = {
-        128:  0b000,
-        250:  0b001,
-        490:  0b010,
-        920:  0b011,
-        1600: 0b100, # default
+        128: 0b000,
+        250: 0b001,
+        490: 0b010,
+        920: 0b011,
+        1600: 0b100,  # default
         2400: 0b101,
-        3300: 0b110
+        3300: 0b110,
     }
 
     # Comparator Mode
     # bit 4 on config register
-    COMP_TRADITIONAL = 0b0 #default
+    COMP_TRADITIONAL = 0b0  # default
     COMP_WINDOW = 0b1
 
     # Comparator Polarity
     # bit 3 on config register
-    COMP_POL_LOW = 0b0 # default
+    COMP_POL_LOW = 0b0  # default
     COMP_POL_HIGH = 0b1
 
     # Latching comparator
     # bit 2 on config register
-    LATCH_OFF = 0b0 # default
+    LATCH_OFF = 0b0  # default
     LATCH_ON = 0b1
 
     # Comparator queue
@@ -77,7 +68,7 @@ class ADS1015(BaseSensor):
     ASSERT_AFTER_1 = 0b00
     ASSERT_AFTER_2 = 0b01
     ASSERT_AFTER_4 = 0b10
-    QUEUE_OFF = 0b11 # default
+    QUEUE_OFF = 0b11  # default
 
     def __init__(self, bus: Type[BaseBus]) -> None:
         super().__init__(bus)
@@ -103,7 +94,7 @@ class ADS1015(BaseSensor):
 
         adc = ADS1015(bus)
 
-        #defaults
+        # defaults
         adc.start_adc()
         adc.set_continuous(adc._continuous_mode)
         adc.set_data_range(adc._full_range)
@@ -112,13 +103,12 @@ class ADS1015(BaseSensor):
         # return ADS1015(bus)
         return adc
 
-
     def set_differential_mode(self, channel1: int = 0, channel2: int = 1) -> None:
         # TODO: checks
         cfg = self._bus.read_register_list(self.CONFIG_REGISTER, 2)
 
         cfg[0] &= 10001111
-        cfg[0] |= (self.CH_COMP[(channel1, channel2)] << 4)
+        cfg[0] |= self.CH_COMP[(channel1, channel2)] << 4
 
         self._bus.write_register_list(self.CONFIG_REGISTER, cfg)
 
@@ -126,8 +116,8 @@ class ADS1015(BaseSensor):
         # TODO: checks
         cfg = self._bus.read_register_list(self.CONFIG_REGISTER, 2)
 
-        cfg[0] &= 10001111 # TODO: change these to xor
-        cfg[0] |= (self.CH_SINGLE[channel] << 4)
+        cfg[0] &= 10001111  # TODO: change these to xor
+        cfg[0] |= self.CH_SINGLE[channel] << 4
 
         self._bus.write_register_list(self.CONFIG_REGISTER, cfg)
 
@@ -136,7 +126,7 @@ class ADS1015(BaseSensor):
         cfg = self._bus.read_register_list(self.CONFIG_REGISTER, 2)
 
         cfg[0] &= 11110001
-        cfg[0] |= (self.RANGES[full_scale_range] << 1)
+        cfg[0] |= self.RANGES[full_scale_range] << 1
 
         self._bus.write_register_list(self.CONFIG_REGISTER, cfg)
 
@@ -149,13 +139,12 @@ class ADS1015(BaseSensor):
 
         self._bus.write_register_list(self.CONFIG_REGISTER, cfg)
 
-
     def set_data_rate(self, data_rate: int = 1600) -> None:
         # TODO: checks
         cfg = self._bus.read_register_list(self.CONFIG_REGISTER, 2)
 
         cfg[1] &= 0b11111000
-        cfg[1] |= (self.DATARATES[data_rate] << 5)
+        cfg[1] |= self.DATARATES[data_rate] << 5
 
         self._bus.write_register_list(self.CONFIG_REGISTER, cfg)
 
@@ -193,7 +182,9 @@ class ADS1015(BaseSensor):
     # TODO: stop conversions
     def stop(self) -> None:
         # set config register to default
-        self._bus.write_register_list(self.CONFIG_REGISTER, self.CONFIG_REGISTER_DEFAULT)
+        self._bus.write_register_list(
+            self.CONFIG_REGISTER, self.CONFIG_REGISTER_DEFAULT
+        )
 
     def read(self) -> float:
         raw_diff = self._bus.read_register_list(self.CONVERSION_REGISTER, 2)
@@ -205,7 +196,7 @@ class ADS1015(BaseSensor):
     @staticmethod
     def _sensor_raw_value_to_v(value: int) -> float:
         # convert two's complement
-        max_value = 2 ** 12
+        max_value = 2**12
         if value > max_value:
             value -= max_value
 

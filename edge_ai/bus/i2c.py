@@ -1,7 +1,9 @@
+from typing import List
+
 import smbus2
 
-from typing import List
 from .basebus import BaseBus
+
 
 class I2C(BaseBus):
     def __init__(self, address: int, busnum: int) -> None:
