@@ -148,15 +148,57 @@ class ADS1015(BaseSensor):
 
         self._bus.write_register_list(self.CONFIG_REGISTER, cfg)
 
-    # def start_single_channel(self, channel: int = 0) -> None:
-    #     # TODO: checks
-    #     self.set_single_channel(channel)
-    #     self.start()
+    def set_alert_ready_polarity(self, polarity=0) -> None:
+        cfg = self._bus.read_register_list(self.CONFIG_REGISTER, 2)
 
-    # def start_differential_mode(self, channel1: int = 0, channel2: int = 1) -> None:
-    #     # TODO: checks
-    #     self.set_differential_mode(channel1, channel2)
-    #     self.start()
+        cfg[1] &= 0b11110111
+        cfg[1] |= polarity << 3
+
+        self._bus.write_register_list(self.CONFIG_REGISTER, cfg)
+
+    def set_comp_mode_traditional(self) -> None:
+        cfg = self._bus.read_register_list(self.CONFIG_REGISTER, 2)
+
+        cfg[1] &= 0b11101111
+
+        self._bus.write_register_list(self.CONFIG_REGISTER, cfg)
+
+    def set_comp_mode_window(self) -> None:
+        cfg = self._bus.read_register_list(self.CONFIG_REGISTER, 2)
+
+        cfg[1] |= 0b1 << 4
+
+        self._bus.write_register_list(self.CONFIG_REGISTER, cfg)
+
+    def enable_latching_comparator(self, latch=True) -> None:
+        cfg = self._bus.read_register_list(self.CONFIG_REGISTER, 2)
+
+        cfg[1] &= 0b11111011
+        if latch:
+            cfg[1] |= 1 << 2
+
+        self._bus.write_register_list(self.CONFIG_REGISTER, cfg)
+
+    def set_comparator_queue(self, length=0) -> None:
+        cfg = self._bus.read_register_list(self.CONFIG_REGISTER, 2)
+
+        cfg[1] &= 0b11111100
+        if length != 0:
+            cfg[1] |= length - 1
+        else:
+            cfg[1] |= 3
+
+        self._bus.write_register_list(self.CONFIG_REGISTER, cfg)
+
+    def set_lo_thresh(self, value=0x800) -> None:
+        thresh_in_bytes = self._divide_into_bytes(value)
+
+        self._bus.write_register_list(self.LO_THRESH_REGISTER, thresh_in_bytes)
+
+    def set_hi_thresh(self, value=0x7FF) -> None:
+        thresh_in_bytes = self._divide_into_bytes(value)
+
+        self._bus.write_register_list(self.HI_THRESH_REGISTER, thresh_in_bytes)
 
     # starts continuous conversion
     def start_continuous(self) -> None:
@@ -185,6 +227,11 @@ class ADS1015(BaseSensor):
         self._bus.write_register_list(
             self.CONFIG_REGISTER, self.CONFIG_REGISTER_DEFAULT
         )
+
+    def new_data_available(self) -> bool:
+        cfg = self._bus.read_register_list(self.CONFIG_REGISTER, 2)
+
+        return cfg[0] >> 15
 
     def read(self) -> float:
         raw_diff = self._bus.read_register_list(self.CONVERSION_REGISTER, 2)

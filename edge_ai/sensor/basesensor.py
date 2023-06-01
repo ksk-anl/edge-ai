@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
+from textwrap import wrap
 from typing import Any, Type
 
 from ..bus import BaseBus
@@ -18,6 +21,14 @@ class BaseSensor(ABC):
         low = low >> shift
 
         return high | low
+
+    @staticmethod
+    def _divide_into_bytes(num: int) -> list[int]:
+        binstring = bin(num)[2:]
+
+        bytestrings = wrap(binstring, 8)
+
+        return [int(x) for x in bytestrings]
 
     def start(self) -> None:
         if self._running:

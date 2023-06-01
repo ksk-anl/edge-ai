@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import spidev
 
 from .basebus import BaseBus
@@ -32,14 +34,22 @@ class SPI(BaseBus):
 
         self._spi.close()
 
-    def read_register(self, register: int) -> int:
-        to_read = [register | 0x80, 0x00]
-
-        return self._get_bus().xfer2(to_read)[1]
-
     def write_register(self, register: int, value: int) -> None:
         to_write = [register, value]
 
         self._get_bus().xfer2(to_write)
 
-    # TODO: Multibyte version?
+    def write_register_list(self, register: int, value: list[int]) -> None:
+        to_write = [register | 0x80] + value
+
+        return self._get_bus().xfer2(to_write)
+
+    def read_register(self, register: int) -> int:
+        to_read = [register | 0x80, 0x00]
+
+        return self._get_bus().xfer2(to_read)[1]
+
+    def read_register_list(self, register: int, length: int) -> list[int]:
+        to_read = [register | 0x80] + [0x00] * length
+
+        return self._get_bus().xfer2(to_read)
