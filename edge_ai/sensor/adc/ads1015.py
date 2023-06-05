@@ -190,6 +190,7 @@ class ADS1015(BaseSensor):
 
         self._bus.write_register_list(self.CONFIG_REGISTER, cfg)
 
+    # TODO: make this use V units rather than hex/binary
     def set_lo_thresh(self, value=0x800) -> None:
         thresh_in_bytes = self._divide_into_bytes(value)
 
