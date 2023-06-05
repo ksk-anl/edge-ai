@@ -99,6 +99,7 @@ def motionsensor_controller_run_for_spi() -> None:
 @allow_kbinterrupt
 def adc_controller_i2c() -> None:
     adc_controller = controller.adc.ADS1015.I2C(0x48, 1)
+    adc_controller.set_data_range(4.096)
     adc_controller.start()
 
     print("Outputting ADC output, Ctrl + C to stop:")
@@ -116,9 +117,10 @@ def adc_triggers_motionsensor_sensor() -> None:
     motionsensor.set_datarate(5376)
     motionsensor.enable_axes()
 
-    adc = sensor.adc.ADS1015(0x48, 1)
+    adc = sensor.adc.ADS1015.I2C(0x48, 1)
+    adc.set_data_range(4.096)
 
-    motionsensor.start_adc()
+    motionsensor.start()
     adc.start_adc()
 
     while True:
