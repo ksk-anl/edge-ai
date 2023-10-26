@@ -9,11 +9,11 @@ import script
 DAEMONPIDFILE = "daemon.pid"
 
 
-def start() -> None:
+def start():
     path = os.path.dirname(__file__)
     context = daemon.DaemonContext(
         working_directory=path,
-        pidfile=daemon.pidfile.TimeoutPIDLockFile(f"{path}/{DAEMONPIDFILE}"),
+        pidfile=daemon.pidfile.TimeoutPIDLockFile("{}/{}".format(path, DAEMONPIDFILE)),
     )
 
     with context:
@@ -33,4 +33,4 @@ if __name__ == "__main__":
         start()
     elif args.action == "stop":
         path = os.path.dirname(__file__)
-        os.system(f"cat {path}/{DAEMONPIDFILE} | xargs kill")
+        os.system("cat {}/{} | xargs kill".format(path, DAEMONPIDFILE))

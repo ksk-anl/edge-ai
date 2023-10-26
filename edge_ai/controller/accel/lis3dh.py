@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import datetime
 import time
 from multiprocessing.connection import Connection
@@ -10,7 +8,7 @@ from ..basecontroller import BaseController
 
 
 class LIS3DH(BaseController):
-    def __init__(self, interface: str, busconfig: dict[str, int]) -> None:
+    def __init__(self, interface, busconfig):
         super().__init__()
 
         self._busconfig = busconfig
@@ -27,18 +25,18 @@ class LIS3DH(BaseController):
         self._z = True
 
     @staticmethod
-    def SPI(busnum: int, cs: int, maxspeed: int = 10_000_000, mode: int = 3) -> LIS3DH:
+    def SPI(busnum, cs, maxspeed = 10_000_000, mode = 3):
         busconfig = {"busnum": busnum, "cs": cs, "maxspeed": maxspeed, "mode": mode}
         controller = LIS3DH("spi", busconfig)
         return controller
 
     @staticmethod
-    def I2C(address: int, busnum: int) -> LIS3DH:
+    def I2C(address, busnum):
         busconfig = {"address": address, "busnum": busnum}
         controller = LIS3DH("i2c", busconfig)
         return controller
 
-    def set_measurement_range(self, measurement_range: int) -> None:
+    def set_measurement_range(self, measurement_range):
         if measurement_range not in sensor.accel.LIS3DH.MEASUREMENT_RANGES:
             raise Exception(
                 "Measurement range must be one of: {}".format(
@@ -50,7 +48,7 @@ class LIS3DH(BaseController):
 
         self._measurement_range = measurement_range
 
-    def set_datarate(self, datarate: int) -> None:
+    def set_datarate(self, datarate):
         if datarate not in sensor.accel.LIS3DH.DATARATES.keys():
             raise Exception(
                 "Data Rate must be one of: {}".format(
@@ -60,7 +58,7 @@ class LIS3DH(BaseController):
 
         self._datarate = datarate
 
-    def set_resolution(self, resolution: str) -> None:
+    def set_resolution(self, resolution):
         if resolution not in sensor.accel.LIS3DH.RESOLUTIONS.keys():
             raise Exception(
                 'Resolution must be one of: {}'.format(
@@ -70,7 +68,7 @@ class LIS3DH(BaseController):
 
         self._resolution = resolution
 
-    def set_selftest(self, mode: str = "high") -> None:
+    def set_selftest(self, mode = "high"):
         if mode not in sensor.accel.LIS3DH.SELFTEST_MODES:
             raise Exception(
                 "Selftest Mode must be one of: {}".format(
@@ -80,24 +78,20 @@ class LIS3DH(BaseController):
 
         self._selftest = mode
 
-    def enable_highpass(self, highpass: bool = True) -> None:
+    def enable_highpass(self, highpass = True):
         self._highpass = highpass
 
-    def read_for(
-        self, seconds: float = 0, timeformat: str = "%Y-%m-%d %H:%M:%S.%f"
-    ) -> list[tuple[str, list[float]]]:
+    def read_for(self, seconds = 0, timeformat = "%Y-%m-%d %H:%M:%S.%f"):
         self._external_pipe.send(("read for", seconds, timeformat))
 
         return self._external_pipe.recv()
 
-    def enable_axes(self, x: bool = True, y: bool = True, z: bool = True) -> None:
+    def enable_axes(self, x = True, y = True, z = True):
         self._x = x
         self._y = y
         self._z = z
 
-    def _read_for(
-        self, seconds: float, timeformat: str
-    ) -> list[tuple[str, list[float]]]:
+    def _read_for(self, seconds, timeformat):
         start = time.time()
 
         results = []
@@ -110,7 +104,7 @@ class LIS3DH(BaseController):
 
         return results
 
-    def _initialize_sensor(self) -> sensor.accel.LIS3DH:
+    def _initialize_sensor(self):
         if self._interface == "spi":
             return sensor.accel.LIS3DH.SPI(**self._busconfig)
         elif self._interface == "i2c":
@@ -118,7 +112,7 @@ class LIS3DH(BaseController):
         else:
             raise Exception("Mode must be spi or i2c")
 
-    def _configure_sensor(self) -> None:
+    def _configure_sensor(self):
         self._sensor.set_resolution(self._resolution)
         self._sensor.set_datarate(self._datarate)
         self._sensor.set_measurement_range(self._measurement_range)
@@ -126,7 +120,7 @@ class LIS3DH(BaseController):
         self._sensor.set_selftest(self._selftest)
         self._sensor.enable_highpass(self._highpass)
 
-    def _internal_loop(self, pipe: Connection) -> None:
+    def _internal_loop(self, pipe):
         # this is a loop that manages the running of the sensor.
 
         # Initialize Sensor

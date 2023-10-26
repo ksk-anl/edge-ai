@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import io
 import json
 import logging
@@ -19,19 +17,14 @@ from edge_ai.controller.adc import ADS1015
 BASE_PATH = os.path.dirname(__file__)
 
 
-def _parse_config() -> dict[str, any]:
+def _parse_config():
     # TODO: Parse and validate JSON contents
     with open("{}/config.json".format(BASE_PATH)) as f:
         config = json.load(f)
     return config
 
 
-def _event_loop(
-    motionsensor: LIS3DH,
-    adc: ADS1015,
-    conn: psycopg2.extensions.connection,
-    config: dict[str, any],
-) -> None:
+def _event_loop(motionsensor, adc, conn, config,):
     logging.info("Waiting for high ADC reading (Object Detection)")
     while True:
         time.sleep(config["adc_measurement_interval"])
@@ -107,7 +100,7 @@ def _event_loop(
     cursor.close()
 
 
-def main() -> None:
+def main():
     config = _parse_config()
 
     # Preparing logger

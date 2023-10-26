@@ -1,30 +1,26 @@
-from __future__ import annotations
-
 from abc import ABC, abstractmethod
-from typing import List
-
 
 class BaseBus(ABC):
     @abstractmethod
-    def start(self) -> None:
+    def start(self):
         ...
 
     @abstractmethod
-    def stop(self) -> None:
+    def stop(self):
         ...
 
     @abstractmethod
-    def read_register(self, register: int) -> int:
+    def read_register(self, register):
         ...
 
     @abstractmethod
-    def read_register_list(self, register: int, length: int) -> List[int]:
+    def read_register_list(self, register, length):
         ...
 
     @abstractmethod
-    def write_register(self, register: int, value: int) -> None:
+    def write_register(self, register, value):
         ...
 
     @abstractmethod
-    def write_register_list(self, register: int, value: List[int]) -> None:
+    def write_register_list(self, register, value):
         ...

@@ -1,7 +1,3 @@
-from __future__ import annotations
-
-from typing import Type
-
 from ...bus import I2C, BaseBus
 from ..basesensor import BaseSensor
 
@@ -34,8 +30,6 @@ class ADS1015(BaseSensor):
     # Operating Mode
     # bit 8 on config register
     MODE_CONTINUOUS = 0b0
-    MODE_SINGLE = 0b1  # default
-
     # Data Rate Setting
     # bits 7:5 on config register
     DATARATES = {
@@ -70,7 +64,7 @@ class ADS1015(BaseSensor):
     ASSERT_AFTER_4 = 0b10
     QUEUE_OFF = 0b11  # default
 
-    def __init__(self, bus: Type[BaseBus]) -> None:
+    def __init__(self, bus):
         super().__init__(bus)
 
         # set up the bus
@@ -89,7 +83,7 @@ class ADS1015(BaseSensor):
         self._comp_queue = 0
 
     @staticmethod
-    def I2C(address: int = 0x48, busnum: int = 1) -> ADS1015:
+    def I2C(address = 0x48, busnum = 1):
         bus = I2C(address, busnum)
 
         adc = ADS1015(bus)
@@ -103,7 +97,7 @@ class ADS1015(BaseSensor):
         # return ADS1015(bus)
         return adc
 
-    def set_differential_mode(self, channel1: int = 0, channel2: int = 1) -> None:
+    def set_differential_mode(self, channel1 = 0, channel2 = 1):
         # TODO: checks
         cfg = self._bus.read_register_list(self.CONFIG_REGISTER, 2)
 
@@ -112,7 +106,7 @@ class ADS1015(BaseSensor):
 
         self._bus.write_register_list(self.CONFIG_REGISTER, cfg)
 
-    def set_single_channel(self, channel: int = 0) -> None:
+    def set_single_channel(self, channel = 0):
         # TODO: checks
         cfg = self._bus.read_register_list(self.CONFIG_REGISTER, 2)
 
@@ -121,7 +115,7 @@ class ADS1015(BaseSensor):
 
         self._bus.write_register_list(self.CONFIG_REGISTER, cfg)
 
-    def set_data_range(self, full_scale_range: float = 2.048) -> None:
+    def set_data_range(self, full_scale_range = 2.048):
         # TODO: checks
         cfg = self._bus.read_register_list(self.CONFIG_REGISTER, 2)
 
@@ -130,7 +124,7 @@ class ADS1015(BaseSensor):
 
         self._bus.write_register_list(self.CONFIG_REGISTER, cfg)
 
-    def set_continuous(self, continuous: bool = True) -> None:
+    def set_continuous(self, continuous = True):
         # TODO: checks
         cfg = self._bus.read_register_list(self.CONFIG_REGISTER, 2)
 
@@ -139,7 +133,7 @@ class ADS1015(BaseSensor):
 
         self._bus.write_register_list(self.CONFIG_REGISTER, cfg)
 
-    def set_data_rate(self, data_rate: int = 1600) -> None:
+    def set_data_rate(self, data_rate = 1600):
         # TODO: checks
         cfg = self._bus.read_register_list(self.CONFIG_REGISTER, 2)
 
@@ -148,7 +142,7 @@ class ADS1015(BaseSensor):
 
         self._bus.write_register_list(self.CONFIG_REGISTER, cfg)
 
-    def set_alert_ready_polarity(self, polarity=0) -> None:
+    def set_alert_ready_polarity(self, polarity = 0):
         cfg = self._bus.read_register_list(self.CONFIG_REGISTER, 2)
 
         cfg[1] &= 0b11110111
@@ -156,21 +150,21 @@ class ADS1015(BaseSensor):
 
         self._bus.write_register_list(self.CONFIG_REGISTER, cfg)
 
-    def set_comp_mode_traditional(self) -> None:
+    def set_comp_mode_traditional(self):
         cfg = self._bus.read_register_list(self.CONFIG_REGISTER, 2)
 
         cfg[1] &= 0b11101111
 
         self._bus.write_register_list(self.CONFIG_REGISTER, cfg)
 
-    def set_comp_mode_window(self) -> None:
+    def set_comp_mode_window(self):
         cfg = self._bus.read_register_list(self.CONFIG_REGISTER, 2)
 
         cfg[1] |= 0b1 << 4
 
         self._bus.write_register_list(self.CONFIG_REGISTER, cfg)
 
-    def enable_latching_comparator(self, latch=True) -> None:
+    def enable_latching_comparator(self, latch = True):
         cfg = self._bus.read_register_list(self.CONFIG_REGISTER, 2)
 
         cfg[1] &= 0b11111011
@@ -179,7 +173,7 @@ class ADS1015(BaseSensor):
 
         self._bus.write_register_list(self.CONFIG_REGISTER, cfg)
 
-    def set_comparator_queue(self, length=0) -> None:
+    def set_comparator_queue(self, length = 0):
         cfg = self._bus.read_register_list(self.CONFIG_REGISTER, 2)
 
         cfg[1] &= 0b11111100
@@ -191,50 +185,50 @@ class ADS1015(BaseSensor):
         self._bus.write_register_list(self.CONFIG_REGISTER, cfg)
 
     # TODO: make this use V units rather than hex/binary
-    def set_lo_thresh(self, value=0x800) -> None:
+    def set_lo_thresh(self, value = 0x800):
         thresh_in_bytes = self._divide_into_bytes(value)
 
         self._bus.write_register_list(self.LO_THRESH_REGISTER, thresh_in_bytes)
 
-    def set_hi_thresh(self, value=0x7FF) -> None:
+    def set_hi_thresh(self, value = 0x7FF):
         thresh_in_bytes = self._divide_into_bytes(value)
 
         self._bus.write_register_list(self.HI_THRESH_REGISTER, thresh_in_bytes)
 
     # starts continuous conversion
-    def start_continuous(self) -> None:
+    def start_continuous(self):
         cfg = self._bus.read_register_list(self.CONFIG_REGISTER, 2)
 
         cfg[0] |= 0x80
 
         self._bus.write_register_list(self.CONFIG_REGISTER, cfg)
 
-    def start_singleshot(self) -> None:
+    def start_singleshot(self):
         cfg = self._bus.read_register_list(self.CONFIG_REGISTER, 2)
 
         cfg[0] |= 0x81
 
         self._bus.write_register_list(self.CONFIG_REGISTER, cfg)
 
-    def start_adc(self) -> None:
+    def start_adc(self):
         if self._continuous_mode:
             self.start_continuous()
         else:
             self.start_singleshot()
 
     # TODO: stop conversions
-    def stop(self) -> None:
+    def stop(self):
         # set config register to default
         self._bus.write_register_list(
             self.CONFIG_REGISTER, self.CONFIG_REGISTER_DEFAULT
         )
 
-    def new_data_available(self) -> bool:
+    def new_data_available(self):
         cfg = self._bus.read_register_list(self.CONFIG_REGISTER, 2)
 
         return cfg[0] >> 15
 
-    def read(self) -> float:
+    def read(self):
         raw_diff = self._bus.read_register_list(self.CONVERSION_REGISTER, 2)
         final = self._combine_bytes(raw_diff[0], raw_diff[1], 12)
 
@@ -242,7 +236,7 @@ class ADS1015(BaseSensor):
 
     # TODO: ADC gain setters
     @staticmethod
-    def _sensor_raw_value_to_v(value: int) -> float:
+    def _sensor_raw_value_to_v(value):
         # convert two's complement
         max_value = 2**12
         if value > max_value:

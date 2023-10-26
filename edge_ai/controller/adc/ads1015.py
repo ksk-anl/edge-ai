@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from multiprocessing.connection import Connection
 
 import edge_ai.sensor as sensor
@@ -8,7 +6,7 @@ from ..basecontroller import BaseController
 
 
 class ADS1015(BaseController):
-    def __init__(self, mode: str, busconfig: dict[str, int]) -> None:
+    def __init__(self, mode, busconfig):
         super().__init__()
         self._mode = mode
         self._busconfig = busconfig
@@ -29,76 +27,76 @@ class ADS1015(BaseController):
         self._hi_thresh = 0x7FF
 
     @staticmethod
-    def I2C(address: int, busnum: int) -> ADS1015:
+    def I2C(address, busnum):
         busconfig = {"address": address, "busnum": busnum}
         controller = ADS1015("i2c", busconfig)
         return controller
 
     # External API
     # OS Bit: Read/Write status, continuous or singleshot controls
-    def new_data_available(self) -> bool:
+    def new_data_available(self):
         self._external_pipe.send(["new_data_available"])
 
         return self._external_pipe.recv()
 
-    def set_continuous(self) -> None:
+    def set_continuous(self):
         self._continuous = True
 
-    def set_singleshot(self) -> None:
+    def set_singleshot(self):
         self._continuous = False
 
     # MUX bit: set multiplexer state (which channels are to be used)
-    def set_differential_mode(self, channel1: int = 0, channel2: int = 1) -> None:
+    def set_differential_mode(self, channel1 = 0, channel2 = 1):
         self._diff_channel1 = channel1
         self._diff_channel2 = channel2
 
         self._diffmode = True
 
-    def set_single_channel(self, channel: int = 0) -> None:
+    def set_single_channel(self, channel = 0):
         self._single_channel = channel
 
         self._diffmode = False
 
     # PGA bit: set full data range
-    def set_data_range(self, full_scale_range: float = 2.048) -> None:
+    def set_data_range(self, full_scale_range = 2.048):
         self._datarange = full_scale_range
 
     # DR bits: set data rate in SPS
-    def set_data_rate(self, data_rate: int = 1600) -> None:
+    def set_data_rate(self, data_rate = 1600):
         self._data_rate = data_rate
 
     # COMP_MODE bits: sets the comparator mode
-    def set_comp_mode_traditional(self) -> None:
+    def set_comp_mode_traditional(self):
         self._comp_mode_traditional = True
 
-    def set_comp_mode_window(self) -> None:
+    def set_comp_mode_window(self):
         self._comp_mode_traditional = False
 
     # COMP_POL bit: sets the ppolarity of the ALERT/RDY pin
-    def set_alert_ready_polarity(self, polarity=0) -> None:
+    def set_alert_ready_polarity(self, polarity = 0):
         self._comp_polarity = polarity
 
     # COMP_LAT bit: sets the comparator alter pin to latching mode
-    def enable_latching_comparator(self, latch=True) -> None:
+    def enable_latching_comparator(self, latch = True):
         self._comp_latch = latch
 
     # COMP_QUE bits: sets the number of consecutive conversions past the
     #   threshold before triggering the ALERT/RDY pin
-    def set_comparator_queue(self, length=0) -> None:
+    def set_comparator_queue(self, length = 0):
         self._comp_queue_length = length
 
     # Lo and Hi_thresh registers: sets the low or high thresh register values
-    def set_lo_thresh(self, value=0x800) -> None:
+    def set_lo_thresh(self, value = 0x800):
         self._lo_thresh = value
 
-    def set_hi_thresh(self, value=0x7FF) -> None:
+    def set_hi_thresh(self, value = 0x7FF):
         self._hi_thresh = value
 
     # Internal methods
-    def _initialize_sensor(self) -> sensor.adc.ADS1015:
+    def _initialize_sensor(self):
         return sensor.adc.ADS1015.I2C(**self._busconfig)
 
-    def _configure_sensor(self) -> None:
+    def _configure_sensor(self):
         self._sensor.set_data_range(self._datarange)
         self._sensor.set_data_rate(self._data_rate)
         self._sensor.set_alert_ready_polarity(self._comp_polarity)
@@ -122,7 +120,7 @@ class ADS1015(BaseController):
         else:
             self._sensor.start_singleshot()
 
-    def _internal_loop(self, pipe: Connection) -> None:
+    def _internal_loop(self, pipe):
         # this is a loop that manages the running of the sensor.
 
         # Initialize Sensor

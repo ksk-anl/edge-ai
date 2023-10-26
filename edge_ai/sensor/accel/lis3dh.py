@@ -1,7 +1,3 @@
-from __future__ import annotations
-
-from typing import Type
-
 from ...bus import I2C, SPI, BaseBus
 from ..basesensor import BaseSensor
 
@@ -45,7 +41,7 @@ class LIS3DH(BaseSensor):
     OUT_Z_L = 0x2C
     OUT_Z_H = 0x2D
 
-    def __init__(self, bus: Type[BaseBus]) -> None:
+    def __init__(self, bus):
         super().__init__(bus)
 
         # defaults
@@ -56,16 +52,16 @@ class LIS3DH(BaseSensor):
         self._highpass = False
 
     @staticmethod
-    def SPI(busnum: int, cs: int, maxspeed: int = 10_000_000, mode: int = 3) -> LIS3DH:
+    def SPI(busnum, cs, maxspeed = 10_000_000, mode = 3):
         bus = SPI(busnum, cs, maxspeed, mode)
         return LIS3DH(bus)
 
     @staticmethod
-    def I2C(address: int, busnum: int) -> LIS3DH:
+    def I2C(address, busnum):
         bus = I2C(address, busnum)
         return LIS3DH(bus)
 
-    def set_measurement_range(self, measurement_range: int) -> None:
+    def set_measurement_range(self, measurement_range):
         if measurement_range not in self.MEASUREMENT_RANGES.keys():
             raise Exception(
                 "Measurement range must be one of: {}".format(
@@ -80,7 +76,7 @@ class LIS3DH(BaseSensor):
 
         self._bus.write_register(self.CTRL_REG4, cfg)
 
-    def set_datarate(self, datarate: int) -> None:
+    def set_datarate(self, datarate):
         if datarate not in self.DATARATES.keys():
             valid_rates = [str(rate) for rate in self.DATARATES.keys()]
             raise Exception(
@@ -99,7 +95,7 @@ class LIS3DH(BaseSensor):
 
         self._bus.write_register(self.CTRL_REG1, cfg)
 
-    def set_resolution(self, resolution: str) -> None:
+    def set_resolution(self, resolution):
         if resolution not in self.RESOLUTIONS.keys():
             raise Exception(
                 'Mode must be one of {}'.format(", ".join(self.RESOLUTIONS.keys()))
@@ -135,7 +131,7 @@ class LIS3DH(BaseSensor):
 
         self._bus.write_register(self.CTRL_REG4, cfg)
 
-    def set_selftest(self, mode: str = "high") -> None:
+    def set_selftest(self, mode = "high"):
         if mode not in self.SELFTEST_MODES:
             raise Exception(
                 "Selftest Mode must be one of: {}".format(
@@ -155,7 +151,7 @@ class LIS3DH(BaseSensor):
 
         self._bus.write_register(self.CTRL_REG4, cfg)
 
-    def enable_highpass(self, highpass: bool = True) -> None:
+    def enable_highpass(self, highpass = True):
         cfg = self._bus.read_register(self.CTRL_REG2)
 
         if highpass:
@@ -165,7 +161,7 @@ class LIS3DH(BaseSensor):
 
         self._bus.write_register(self.CTRL_REG2, cfg)
 
-    def enable_axes(self, x: bool = True, y: bool = True, z: bool = True) -> None:
+    def enable_axes(self, x = True, y = True, z = True):
         cfg = self._bus.read_register(self.CTRL_REG1)
 
         if x:
@@ -177,16 +173,16 @@ class LIS3DH(BaseSensor):
 
         self._bus.write_register(self.CTRL_REG1, cfg)
 
-    def read(self) -> list[float]:
+    def read(self):
         raw_values = self._read_sensors()
         return [self._raw_sensor_value_to_gravity(value) for value in raw_values]
 
-    def new_data_available(self) -> bool:
+    def new_data_available(self):
         status = self._bus.read_register(self.STATUS_REGISTER)
         status = (status >> 3) & 1
         return bool(status)
 
-    def _read_sensors(self) -> tuple[int, int, int]:
+    def _read_sensors(self):
         x = self._bus.read_register(self.OUT_X_H)
         y = self._bus.read_register(self.OUT_Y_H)
         z = self._bus.read_register(self.OUT_Z_H)
@@ -205,7 +201,7 @@ class LIS3DH(BaseSensor):
 
         return (x, y, z)
 
-    def _raw_sensor_value_to_gravity(self, value: int) -> float:
+    def _raw_sensor_value_to_gravity(self, value):
         bits = self.RESOLUTIONS[self._resolution]
 
         max_val = 2**bits

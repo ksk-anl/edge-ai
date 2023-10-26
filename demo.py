@@ -1,14 +1,11 @@
-from __future__ import annotations
-
 import math
 import time
-from typing import Callable
 
 import edge_ai.controller as controller
 import edge_ai.sensor as sensor
 
 
-def allow_kbinterrupt(f: Callable[[], None]) -> Callable[[], None]:
+def allow_kbinterrupt(f):
     def inner():
         try:
             f()
@@ -18,7 +15,7 @@ def allow_kbinterrupt(f: Callable[[], None]) -> Callable[[], None]:
     return inner
 
 
-def _format_motionsensor_output(values: list[float]) -> str:
+def _format_motionsensor_output(values):
     final_value = math.sqrt(sum([x**2 for x in values]))
 
     return '{}: {}'.format(
@@ -26,7 +23,7 @@ def _format_motionsensor_output(values: list[float]) -> str:
     )
 
 
-def _motionsensor_test(sensor: sensor.accel.LIS3DH) -> None:
+def _motionsensor_test(sensor):
     sensor.set_resolution("low")
     sensor.set_datarate(5376)
     sensor.set_selftest("off")
@@ -42,19 +39,19 @@ def _motionsensor_test(sensor: sensor.accel.LIS3DH) -> None:
 
 
 @allow_kbinterrupt
-def motionsensor_i2c() -> None:
+def motionsensor_i2c():
     motionsensor = sensor.accel.LIS3DH.I2C(0x18, 1)
     _motionsensor_test(motionsensor)
 
 
 @allow_kbinterrupt
-def motionsensor_spi() -> None:
+def motionsensor_spi():
     motionsensor = sensor.accel.LIS3DH.SPI(0, 0)
     _motionsensor_test(motionsensor)
 
 
 @allow_kbinterrupt
-def adc_sensor_i2c() -> None:
+def adc_sensor_i2c():
     adc = sensor.adc.ADS1015.I2C(address=0x48, busnum=1)
     adc.set_differential_mode()
     adc.set_data_range(4.096)
@@ -67,7 +64,7 @@ def adc_sensor_i2c() -> None:
 
 
 @allow_kbinterrupt
-def motionsensor_controller_spi() -> None:
+def motionsensor_controller_spi():
     motioncontrol = controller.accel.LIS3DH.SPI(0, 0)
     motioncontrol.start()
 
@@ -80,7 +77,7 @@ def motionsensor_controller_spi() -> None:
 
 
 @allow_kbinterrupt
-def motionsensor_controller_run_for_spi() -> None:
+def motionsensor_controller_run_for_spi():
     motioncontrol = controller.accel.LIS3DH.SPI(0, 0)
     motioncontrol.start()
 
@@ -99,7 +96,7 @@ def motionsensor_controller_run_for_spi() -> None:
 
 
 @allow_kbinterrupt
-def adc_controller_i2c() -> None:
+def adc_controller_i2c():
     adc_controller = controller.adc.ADS1015.I2C(0x48, 1)
     adc_controller.set_data_range(4.096)
     adc_controller.start()
@@ -111,7 +108,7 @@ def adc_controller_i2c() -> None:
 
 
 @allow_kbinterrupt
-def adc_triggers_motionsensor_sensor() -> None:
+def adc_triggers_motionsensor_sensor():
     adc_threshold = 2.5
     record_length = 1
 
@@ -142,7 +139,7 @@ def adc_triggers_motionsensor_sensor() -> None:
 
 
 @allow_kbinterrupt
-def adc_triggers_motionsensor_controller() -> None:
+def adc_triggers_motionsensor_controller():
     adc_threshold = 2.5
     record_length = 1
 
