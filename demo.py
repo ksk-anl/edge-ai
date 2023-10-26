@@ -21,7 +21,9 @@ def allow_kbinterrupt(f: Callable[[], None]) -> Callable[[], None]:
 def _format_motionsensor_output(values: list[float]) -> str:
     final_value = math.sqrt(sum([x**2 for x in values]))
 
-    return f'{", ".join([f"{val: 1.5f}" for val in values])}: {final_value}'
+    return '{}: {}'.format(
+        ", ".join(["{:1.5f}".format(val) for val in values]), final_value
+    )
 
 
 def _motionsensor_test(sensor: sensor.accel.LIS3DH) -> None:
@@ -60,7 +62,7 @@ def adc_sensor_i2c() -> None:
 
     print("Outputting ADC output, Ctrl + C to stop:")
     while True:
-        print(f"{adc.read()} V")
+        print("{} V".format(adc.read()))
         time.sleep(0.1)
 
 
@@ -86,7 +88,7 @@ def motionsensor_controller_run_for_spi() -> None:
 
     values = motioncontrol.read_for(10)
 
-    print(f"First 20 results out of {len(values)}:")
+    print("First 20 results out of {}:".format(len(values)))
 
     final_results = [[val[0], _format_motionsensor_output(val[1])] for val in values]
 
@@ -104,7 +106,7 @@ def adc_controller_i2c() -> None:
 
     print("Outputting ADC output, Ctrl + C to stop:")
     while True:
-        print(f"{adc_controller.read()} V")
+        print("{} V".format(adc_controller.read()))
         time.sleep(0.1)
 
 
@@ -133,9 +135,9 @@ def adc_triggers_motionsensor_sensor() -> None:
                 break
 
         finish = time.time() + record_length
-        print(f"Detected high ADC!")
+        print("Detected high ADC!")
         while time.time() < finish:
-            print(f"{_format_motionsensor_output(motionsensor.read())}")
+            print(_format_motionsensor_output(motionsensor.read()))
             time.sleep(0.1)
 
 
@@ -163,9 +165,9 @@ def adc_triggers_motionsensor_controller() -> None:
                 break
 
         finish = time.time() + record_length
-        print(f"Detected high ADC!")
+        print("Detected high ADC!")
         while time.time() < finish:
-            print(f"{_format_motionsensor_output(motionsensor.read())}")
+            print(_format_motionsensor_output(motionsensor.read()))
             time.sleep(0.1)
 
 

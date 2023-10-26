@@ -68,7 +68,9 @@ class LIS3DH(BaseSensor):
     def set_measurement_range(self, measurement_range: int) -> None:
         if measurement_range not in self.MEASUREMENT_RANGES.keys():
             raise Exception(
-                f"Measurement range must be one of: {', '.join([str(range) for range in self.MEASUREMENT_RANGES.keys()])}"
+                "Measurement range must be one of: {}".format(
+                    ', '.join([str(range) for range in self.MEASUREMENT_RANGES.keys()])
+                )
             )
 
         cfg = self._bus.read_register(self.CTRL_REG4)
@@ -81,7 +83,9 @@ class LIS3DH(BaseSensor):
     def set_datarate(self, datarate: int) -> None:
         if datarate not in self.DATARATES.keys():
             valid_rates = [str(rate) for rate in self.DATARATES.keys()]
-            raise Exception(f"Data Rate must be one of: {', '.join(valid_rates)}Hz")
+            raise Exception(
+                "Data Rate must be one of: {}Hz".format(', '.join(valid_rates))
+            )
 
         if ((datarate == 1620) or (datarate == 5376)) and (self._resolution != "low"):
             raise Exception("1620Hz and 5376Hz mode only allowed on Low Power mode")
@@ -97,7 +101,9 @@ class LIS3DH(BaseSensor):
 
     def set_resolution(self, resolution: str) -> None:
         if resolution not in self.RESOLUTIONS.keys():
-            raise Exception(f'Mode must be one of {", ".join(self.RESOLUTIONS.keys())}')
+            raise Exception(
+                'Mode must be one of {}'.format(", ".join(self.RESOLUTIONS.keys()))
+            )
 
         self._resolution = resolution
 
@@ -132,7 +138,9 @@ class LIS3DH(BaseSensor):
     def set_selftest(self, mode: str = "high") -> None:
         if mode not in self.SELFTEST_MODES:
             raise Exception(
-                f"Selftest Mode must be one of: {' ,'.join(self.SELFTEST_MODES)}"
+                "Selftest Mode must be one of: {}".format(
+                    ' ,'.join(self.SELFTEST_MODES)
+                )
             )
 
         cfg = self._bus.read_register(self.CTRL_REG4)

@@ -21,7 +21,7 @@ BASE_PATH = os.path.dirname(__file__)
 
 def _parse_config() -> dict[str, any]:
     # TODO: Parse and validate JSON contents
-    with open(f"{BASE_PATH}/config.json") as f:
+    with open("{}/config.json".format(BASE_PATH)) as f:
         config = json.load(f)
     return config
 
@@ -38,19 +38,23 @@ def _event_loop(
         val = adc.read()
         if val > config["adc_threshold"]:
             break
-    logging.info(f'Object detected. Waiting for {config["wait_time"]} seconds')
+    logging.info('Object detected. Waiting for {} seconds'.format(config["wait_time"]))
 
     time.sleep(config["wait_time"])
 
     logging.info(
-        f'Instructing motion sensor to read for {config["window_length"]} seconds'
+        'Instructing motion sensor to read for {} seconds'.format(
+            config["window_length"]
+        )
     )
     values = motionsensor.read_for(
         config["window_length"], timeformat=config["timeformat"]
     )
     results = [[row[0], math.sqrt(sum([x**2 for x in row[1]]))] for row in values]
 
-    logging.info(f"Finished reading motion sensor. {len(results)} lines recorded")
+    logging.info(
+        "Finished reading motion sensor. {} lines recorded".format(len(results))
+    )
 
     cursor = conn.cursor()
 
@@ -63,7 +67,7 @@ def _event_loop(
     conn.commit()
 
     id = cursor.fetchone()[0]
-    logging.info(f"Finished writing to sections database (Section {id})")
+    logging.info("Finished writing to sections database (Section {})".format(id))
 
     # Arrange data into correct columns
     logging.info("Preparing data for copy")
@@ -96,7 +100,7 @@ def _event_loop(
             json={"data": [{"section_id": id}]},
         )
 
-        logging.info(f"Wrote to RTS with response {res}")
+        logging.info("Wrote to RTS with response {}".format(res))
     else:
         logging.warning("No RTS URL set. Will not attempt to POST.")
 
@@ -108,12 +112,12 @@ def main() -> None:
 
     # Preparing logger
     logging.basicConfig(
-        filename=f'{BASE_PATH}/{config["logfile"]}',
+        filename='{}/{}'.format(BASE_PATH, config["logfile"]),
         format="[%(asctime)s] %(levelname)s: %(message)s",
         level=logging.INFO,
     )
 
-    logging.info(f'{" Beginning of script ":=^50}')
+    logging.info('{:=^50}'.format(" Beginning of script "))
 
     try:
         # Initialize Sensors
@@ -142,7 +146,9 @@ def main() -> None:
             for i in range(config["number_measurements"]):
                 _event_loop(motionsensor, adc, conn, config)
                 logging.info(
-                    f'Measurement {i + 1} of {config["number_measurements"]} finished'
+                    'Measurement {} of {} finished'.format(
+                        i + 1, config["number_measurements"]
+                    )
                 )
         else:
             logging.info("Measuring indefinitely...")

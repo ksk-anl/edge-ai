@@ -41,7 +41,11 @@ class LIS3DH(BaseController):
     def set_measurement_range(self, measurement_range: int) -> None:
         if measurement_range not in sensor.accel.LIS3DH.MEASUREMENT_RANGES:
             raise Exception(
-                f"Measurement range must be one of: {', '.join([str(range) for range in sensor.accel.LIS3DH.MEASUREMENT_RANGES])}"
+                "Measurement range must be one of: {}".format(
+                    ', '.join(
+                        [str(range) for range in sensor.accel.LIS3DH.MEASUREMENT_RANGES]
+                    )
+                )
             )
 
         self._measurement_range = measurement_range
@@ -49,7 +53,9 @@ class LIS3DH(BaseController):
     def set_datarate(self, datarate: int) -> None:
         if datarate not in sensor.accel.LIS3DH.DATARATES.keys():
             raise Exception(
-                f'Data Rate must be one of: {", ".join(sensor.accel.LIS3DH.DATARATES.keys())}'
+                "Data Rate must be one of: {}".format(
+                    ", ".join(sensor.accel.LIS3DH.DATARATES.keys())
+                )
             )
 
         self._datarate = datarate
@@ -57,7 +63,9 @@ class LIS3DH(BaseController):
     def set_resolution(self, resolution: str) -> None:
         if resolution not in sensor.accel.LIS3DH.RESOLUTIONS.keys():
             raise Exception(
-                f'Resolution must be one of: {", ".join(sensor.accel.LIS3DH.RESOLUTIONS.keys())}'
+                'Resolution must be one of: {}'.format(
+                    ", ".join(sensor.accel.LIS3DH.RESOLUTIONS.keys())
+                )
             )
 
         self._resolution = resolution
@@ -65,7 +73,9 @@ class LIS3DH(BaseController):
     def set_selftest(self, mode: str = "high") -> None:
         if mode not in sensor.accel.LIS3DH.SELFTEST_MODES:
             raise Exception(
-                f"Selftest Mode must be one of: {' ,'.join(sensor.accel.LIS3DH.SELFTEST_MODES)}"
+                "Selftest Mode must be one of: {}".format(
+                    ' ,'.join(sensor.accel.LIS3DH.SELFTEST_MODES)
+                )
             )
 
         self._selftest = mode
@@ -95,7 +105,7 @@ class LIS3DH(BaseController):
         while time.time() < start + seconds:
             if self._sensor.new_data_available():
                 results.append(
-                    (f"{datetime.datetime.now():{timeformat}}", self._sensor.read())
+                    (datetime.datetime.now().strftime(timeformat), self._sensor.read())
                 )
 
         return results
