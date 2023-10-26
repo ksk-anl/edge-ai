@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import spidev
 
 from .basebus import BaseBus
@@ -7,7 +5,7 @@ from .basebus import BaseBus
 
 class SPI(BaseBus):
     def __init__(
-        self, busnum, cs, maxspeed = 1_000_000, mode = 3):
+        self, busnum, cs, maxspeed = 1000000, mode = 3):
         self._busnum = busnum
         self._cs = cs
         self._maxspeed = maxspeed

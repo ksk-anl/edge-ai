@@ -25,7 +25,7 @@ class LIS3DH(BaseController):
         self._z = True
 
     @staticmethod
-    def SPI(busnum, cs, maxspeed = 10_000_000, mode = 3):
+    def SPI(busnum, cs, maxspeed = 10000000, mode = 3):
         busconfig = {"busnum": busnum, "cs": cs, "maxspeed": maxspeed, "mode": mode}
         controller = LIS3DH("spi", busconfig)
         return controller

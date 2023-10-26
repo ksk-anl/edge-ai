@@ -52,7 +52,7 @@ class LIS3DH(BaseSensor):
         self._highpass = False
 
     @staticmethod
-    def SPI(busnum, cs, maxspeed = 10_000_000, mode = 3):
+    def SPI(busnum, cs, maxspeed = 10000000, mode = 3):
         bus = SPI(busnum, cs, maxspeed, mode)
         return LIS3DH(bus)
 
