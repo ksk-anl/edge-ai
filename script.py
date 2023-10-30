@@ -4,17 +4,16 @@ import logging
 import math
 import os
 import time
+from urllib import request, parse
 
 import pandas as pd
-import psycopg2
-import psycopg2.extensions
+import pymongo
 import requests
-from requests.auth import HTTPBasicAuth
 
 from edge_ai.controller.accel import LIS3DH
 from edge_ai.controller.adc import ADS1015
 
-BASE_PATH = os.path.dirname(__file__)
+BASE_PATH = os.path.dirname(os.path.abspath(__file__))
 
 
 def _parse_config():
@@ -56,7 +55,7 @@ def _event_loop(motionsensor, adc, conn, config,):
     cursor.execute(
         "INSERT INTO sections (device_id, start_time) VALUES (%s, %s) RETURNING id;",
         (config["device_id"], results[0][0]),
-    )
+        )
     conn.commit()
 
     id = cursor.fetchone()[0]
@@ -80,6 +79,13 @@ def _event_loop(motionsensor, adc, conn, config,):
     outfile.seek(0)
 
     logging.info("Attempting to copy data to gravities table")
+
+    # with conn.begin():
+    #     res = conn.execute(
+    #         "INSERT INTO sections (device_id, start_time) VALUES ({}, {}) RETURNING id;".format(
+    #             (config["device_id"], results[0][0])
+    #         )
+    #     )
     cursor.copy_from(outfile, "gravities", sep=",")
     conn.commit()
 
@@ -87,11 +93,27 @@ def _event_loop(motionsensor, adc, conn, config,):
 
     res = None
     if config["rts_url"] != "":
-        res = requests.post(
-            config["rts_url"],
-            auth=HTTPBasicAuth(**config["rts_access"]),
-            json={"data": [{"section_id": id}]},
-        )
+
+        auth_handler = request.HTTPBasicAuthHandler()
+        auth_handler.add_password(realm = None,
+                                  uri = config['rts_url'],
+                                  user = config['rts_access']['username'],
+                                  passwd = config['rts_access']['password'])
+        opener = request.build_opener(auth_handler)
+        request.install_opener(opener)
+
+        data = parse.urlencode({"data": [{"section_id": id}]}).encode()
+
+        req = request.Request(url = config['rts_url'],
+                              data = data,
+                              method = 'POST')
+        res = request.urlopen(req)
+
+        # res = requests.post(
+        #     config["rts_url"],
+        #     auth=HTTPBasicAuth(**config["rts_access"]),
+        #     json={"data": [{"section_id": id}]},
+        # )
 
         logging.info("Wrote to RTS with response {}".format(res))
     else:
@@ -130,7 +152,12 @@ def main():
 
         # Initialize Database connection
         logging.info("Connecting to Postgres Database")
-        conn = psycopg2.connect(**config["rdb_access"])
+        engine = sqlalchemy.create_engine(
+            "postgresql://{user}:{password}@{host}:{port}/{dbname}".format(**config["rdb_access"])
+            )
+
+        # conn = psycopg2.connect(**config["rdb_access"])
+        conn = engine.raw_connection()
         logging.info("Successfuly connected to Postgres Database")
 
         logging.info("Beginning measurement event loop")
@@ -154,6 +181,7 @@ def main():
     logging.info("Shutting sensors down")
     motionsensor.stop()
     adc.stop()
+    conn.close()
     logging.info("Finishing script")
 
 
