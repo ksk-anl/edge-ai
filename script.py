@@ -8,7 +8,6 @@ from urllib import request, parse
 
 import pandas as pd
 import pymongo
-import requests
 
 from edge_ai.controller.accel import LIS3DH
 from edge_ai.controller.adc import ADS1015
@@ -21,7 +20,6 @@ def _parse_config():
     with open("{}/config.json".format(BASE_PATH)) as f:
         config = json.load(f)
     return config
-
 
 def _event_loop(motionsensor, adc, conn, config,):
     logging.info("Waiting for high ADC reading (Object Detection)")
@@ -43,22 +41,26 @@ def _event_loop(motionsensor, adc, conn, config,):
         config["window_length"], timeformat=config["timeformat"]
     )
     results = [[row[0], math.sqrt(sum([x**2 for x in row[1]]))] for row in values]
-
+    start_time = results[0][0]
     logging.info(
         "Finished reading motion sensor. {} lines recorded".format(len(results))
     )
 
-    cursor = conn.cursor()
+    # cursor = conn.cursor()
 
     # write to section table, get section id
     logging.info("Attempting to write to sections database")
-    cursor.execute(
-        "INSERT INTO sections (device_id, start_time) VALUES (%s, %s) RETURNING id;",
-        (config["device_id"], results[0][0]),
-        )
-    conn.commit()
 
-    id = cursor.fetchone()[0]
+    conn['py']['sections'].insert_one({"time": start_time})
+    id = conn['py']['sections'].count_documents({})
+
+    # cursor.execute(
+    #     "INSERT INTO sections (device_id, start_time) VALUES (%s, %s) RETURNING id;",
+    #     (config["device_id"], results[0][0]),
+    #     )
+    # conn.commit()
+
+    # id = cursor.fetchone()[0]
     logging.info("Finished writing to sections database (Section {})".format(id))
 
     # Arrange data into correct columns
@@ -72,22 +74,20 @@ def _event_loop(motionsensor, adc, conn, config,):
     )
 
     # Load data into a file-like object for copying
-    outfile = io.StringIO()
-    final.to_csv(outfile, header=False, index=False)
+    # outfile = io.StringIO()
+    # final.to_csv(outfile, header=False, index=False)
+
+    final = final.to_dict(orient="records")
 
     # Write data to gravities table
-    outfile.seek(0)
+    # outfile.seek(0)
 
     logging.info("Attempting to copy data to gravities table")
 
-    # with conn.begin():
-    #     res = conn.execute(
-    #         "INSERT INTO sections (device_id, start_time) VALUES ({}, {}) RETURNING id;".format(
-    #             (config["device_id"], results[0][0])
-    #         )
-    #     )
-    cursor.copy_from(outfile, "gravities", sep=",")
-    conn.commit()
+    conn['py']["gravities"].insert_many(final)
+
+    # cursor.copy_from(outfile, "gravities", sep=",")
+    # conn.commit()
 
     logging.info("Finished writing to gravities table")
 
@@ -119,7 +119,7 @@ def _event_loop(motionsensor, adc, conn, config,):
     else:
         logging.warning("No RTS URL set. Will not attempt to POST.")
 
-    cursor.close()
+    # cursor.close()
 
 
 def main():
@@ -152,19 +152,17 @@ def main():
 
         # Initialize Database connection
         logging.info("Connecting to Postgres Database")
-        engine = sqlalchemy.create_engine(
-            "postgresql://{user}:{password}@{host}:{port}/{dbname}".format(**config["rdb_access"])
+        mongoclient = pymongo.MongoClient(
+            "mongodb://{user}:{password}@{host}".format(**config["db_access"])
             )
 
-        # conn = psycopg2.connect(**config["rdb_access"])
-        conn = engine.raw_connection()
         logging.info("Successfuly connected to Postgres Database")
 
         logging.info("Beginning measurement event loop")
 
         if config["number_measurements"] != "infinite":
             for i in range(config["number_measurements"]):
-                _event_loop(motionsensor, adc, conn, config)
+                _event_loop(motionsensor, adc, mongoclient, config)
                 logging.info(
                     'Measurement {} of {} finished'.format(
                         i + 1, config["number_measurements"]
@@ -173,7 +171,7 @@ def main():
         else:
             logging.info("Measuring indefinitely...")
             while True:
-                _event_loop(motionsensor, adc, conn, config)
+                _event_loop(motionsensor, adc, mongoclient, config)
 
     except Exception as e:
         logging.exception(e)
@@ -181,7 +179,6 @@ def main():
     logging.info("Shutting sensors down")
     motionsensor.stop()
     adc.stop()
-    conn.close()
     logging.info("Finishing script")
 
 

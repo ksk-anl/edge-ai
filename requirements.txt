@@ -1,8 +1,8 @@
 cython==0.20
 
-numpy==1.17.5
-pandas==0.25.3
+numpy
+pandas
+pymongo
 python_daemon
-Requests
 smbus2
 spidev
