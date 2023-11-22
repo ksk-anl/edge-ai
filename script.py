@@ -31,7 +31,9 @@ def _event_loop(
     adc: ADS1015,
     conn: psycopg2.extensions.connection,
     config: dict[str, any],
-) -> None:
+) -> int:
+    written_sections = []
+
     logging.info("Waiting for high ADC reading (Object Detection)")
     while True:
         time.sleep(config["adc_measurement_interval"])
@@ -76,31 +78,37 @@ def _event_loop(
     )
 
     # Load data into a file-like object for copying
-    outfile = io.StringIO()
-    final.to_csv(outfile, header=False, index=False)
+    output_stream = io.StringIO()
 
-    # Write data to gravities table
-    outfile.seek(0)
+    # If training mode is on, write to the gravities table
+    if config["train"]:
+        final.to_csv(output_stream, header=False, index=False)
 
-    logging.info("Attempting to copy data to gravities table")
-    cursor.copy_from(outfile, "gravities", sep=",")
-    conn.commit()
+        # Write data to gravities table
+        output_stream.seek(0)
 
-    logging.info("Finished writing to gravities table")
+        logging.info("Attempting to copy data to gravities table")
+        cursor.copy_from(output_stream, "gravities", sep=",")
+        conn.commit()
 
-    res = None
-    if config["rts_url"] != "":
-        res = requests.post(
-            config["rts_url"],
-            auth=HTTPBasicAuth(**config["rts_access"]),
-            json={"data": [{"section_id": id}]},
-        )
+        logging.info("Finished writing to gravities table")
 
-        logging.info(f"Wrote to RTS with response {res}")
+    # If not in training mode, send the data to real-time scoring
     else:
-        logging.warning("No RTS URL set. Will not attempt to POST.")
+        res = None
+        if config["rts_url"] != "":
+            res = requests.post(
+                url=config["rts_url"],
+                auth=HTTPBasicAuth(**config["rts_access"]),
+                json={"data": final.to_json(output_stream, orient='records')},
+            )
 
-    cursor.close()
+            logging.info(f"Wrote to RTS with response {res}")
+        else:
+            logging.warning("No RTS URL set. Will not attempt to POST.")
+
+        cursor.close()
+    return id
 
 
 def main() -> None:
@@ -139,11 +147,14 @@ def main() -> None:
         logging.info("Beginning measurement event loop")
 
         if config["number_measurements"] != "infinite":
+            written_sections = []
             for i in range(config["number_measurements"]):
-                _event_loop(motionsensor, adc, conn, config)
+                written_sections.append(_event_loop(motionsensor, adc, conn, config))
                 logging.info(
                     f'Measurement {i + 1} of {config["number_measurements"]} finished'
                 )
+            print(f"Finished writing {i} sections.:")
+            print("\n".join([x for x in written_sections]))
         else:
             logging.info("Measuring indefinitely...")
             while True:
