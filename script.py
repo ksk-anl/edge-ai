@@ -32,8 +32,6 @@ def _event_loop(
     conn: psycopg2.extensions.connection,
     config: dict[str, any],
 ) -> int:
-    written_sections = []
-
     logging.info("Waiting for high ADC reading (Object Detection)")
     while True:
         time.sleep(config["adc_measurement_interval"])
@@ -105,6 +103,7 @@ def _event_loop(
 
             logging.info(f"Wrote to RTS with response {res}")
         else:
+            # TODO: Save data that's being wasted?
             logging.warning("No RTS URL set. Will not attempt to POST.")
 
         cursor.close()
