@@ -95,10 +95,10 @@ def _event_loop(
     else:
         res = None
         if config["rts_url"] != "":
+            # Make rts_url more intuituve to work with
             res = requests.post(
                 url=config["rts_url"],
-                auth=HTTPBasicAuth(**config["rts_access"]),
-                json={"data": final.to_json(output_stream, orient='records')},
+                json={"data": final.to_dict(orient='records')},
             )
 
             logging.info(f"Wrote to RTS with response {res}")
