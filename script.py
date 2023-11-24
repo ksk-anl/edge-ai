@@ -152,8 +152,8 @@ def main() -> None:
                 logging.info(
                     f'Measurement {i + 1} of {config["number_measurements"]} finished'
                 )
-            print(f"Finished writing {i} sections.:")
-            print("\n".join([x for x in written_sections]))
+            logging.info(f"Finished writing {i + 1} sections:")
+            logging.info(", ".join([str(x) for x in written_sections]))
         else:
             logging.info("Measuring indefinitely...")
             while True:
