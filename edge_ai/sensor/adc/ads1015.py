@@ -245,7 +245,7 @@ class ADS1015(BaseSensor):
     def _sensor_raw_value_to_v(value: int) -> float:
         # convert two's complement
         max_value = 2**12
-        if value > max_value:
+        if value > max_value / 2:
             value -= max_value
 
         return (value * 4.096 * 2) / (max_value)
