@@ -88,6 +88,8 @@ class ADS1015(BaseSensor):
         self._latching_comp = False
         self._comp_queue = 0
 
+        # TODO: setters should update these
+
     @staticmethod
     def I2C(address: int = 0x48, busnum: int = 1) -> ADS1015:
         bus = I2C(address, busnum)
@@ -118,6 +120,8 @@ class ADS1015(BaseSensor):
 
         cfg[0] &= 10001111  # TODO: change these to xor
         cfg[0] |= self.CH_SINGLE[channel] << 4
+
+        # TODO: update internal variable _read_single
 
         self._bus.write_register_list(self.CONFIG_REGISTER, cfg)
 
