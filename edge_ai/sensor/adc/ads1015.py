@@ -134,6 +134,8 @@ class ADS1015(BaseSensor):
 
         self._bus.write_register_list(self.CONFIG_REGISTER, cfg)
 
+        self._full_range = full_scale_range
+
     def set_continuous(self, continuous: bool = True) -> None:
         # TODO: checks
         cfg = self._bus.read_register_list(self.CONFIG_REGISTER, 2)
@@ -245,11 +247,10 @@ class ADS1015(BaseSensor):
         return self._sensor_raw_value_to_v(final)
 
     # TODO: ADC gain setters
-    @staticmethod
-    def _sensor_raw_value_to_v(value: int) -> float:
+    def _sensor_raw_value_to_v(self, value: int) -> float:
         # convert two's complement
         max_value = 2**12
         if value > max_value / 2:
             value -= max_value
 
-        return (value * 4.096 * 2) / (max_value)
+        return (value * self._full_range * 2) / (max_value)
