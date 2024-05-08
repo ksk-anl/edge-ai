@@ -288,6 +288,12 @@ class LIS3DH(BaseSensor):
         Used in converting raw binary values to real units.
         '''
 
+        value = float(value)
+        scale1_high = float(scale1_high)
+        scale1_low = float(scale1_low)
+        scale2_high = float(scale2_high)
+        scale2_low = float(scale2_low)
+
         value = (
             (value - scale1_low)
             * ((scale2_high - scale2_low) / (scale1_high - scale1_low))
