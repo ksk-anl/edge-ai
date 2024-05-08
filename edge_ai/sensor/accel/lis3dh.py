@@ -34,6 +34,8 @@ class LIS3DH(BaseSensor):
     CTRL_REG5 = 0x24
     CTRL_REG6 = 0x25
 
+    TEMP_CFG_REG = 0x1F
+
     REFERENCE_REGISTER = 0x26
     STATUS_REGISTER = 0x27
 
@@ -44,6 +46,14 @@ class LIS3DH(BaseSensor):
     OUT_Y_H = 0x2B
     OUT_Z_L = 0x2C
     OUT_Z_H = 0x2D
+
+    # ADC Output Registers
+    OUT_ADC1_L = 0x08
+    OUT_ADC1_H = 0x09
+    OUT_ADC2_L = 0x0A
+    OUT_ADC2_H = 0x0B
+    OUT_ADC3_L = 0x0C
+    OUT_ADC3_H = 0x0D
 
     def __init__(self, bus: Type[BaseBus]) -> None:
         super().__init__(bus)
@@ -67,11 +77,24 @@ class LIS3DH(BaseSensor):
         bus = I2C(address, busnum)
         return LIS3DH(bus)
 
+    def set_continuous_mode(self, continuous: bool) -> None:
+        cfg = self._bus.read_register(self.CTRL_REG4)
+
+        # set bit7 to 0 if continous, 1 otherwise
+        if continuous:
+            cfg &= 0b01111111
+        else:
+            cfg |= 0b10000000
+
+        self._bus.write_register(self.CTRL_REG4, cfg)
+
     def set_measurement_range(self, measurement_range: int) -> None:
         if measurement_range not in self.MEASUREMENT_RANGES.keys():
             raise Exception(
                 f"Measurement range must be one of: {', '.join([str(range) for range in self.MEASUREMENT_RANGES.keys()])}"
             )
+
+        self._measurement_range = measurement_range
 
         cfg = self._bus.read_register(self.CTRL_REG4)
 
@@ -84,6 +107,8 @@ class LIS3DH(BaseSensor):
         if datarate not in self.DATARATES.keys():
             valid_rates = [str(rate) for rate in self.DATARATES.keys()]
             raise Exception(f"Data Rate must be one of: {', '.join(valid_rates)}Hz")
+
+        self._datarate = datarate
 
         if ((datarate == 1620) or (datarate == 5376)) and (self._resolution != "low"):
             raise Exception("1620Hz and 5376Hz mode only allowed on Low Power mode")
@@ -137,6 +162,8 @@ class LIS3DH(BaseSensor):
                 f"Selftest Mode must be one of: {' ,'.join(self.SELFTEST_MODES)}"
             )
 
+        self._selftest = mode
+
         cfg = self._bus.read_register(self.CTRL_REG4)
 
         cfg &= 0b001
@@ -151,6 +178,8 @@ class LIS3DH(BaseSensor):
 
     def enable_highpass(self, highpass: bool = True) -> None:
         cfg = self._bus.read_register(self.CTRL_REG2)
+
+        self._highpass = highpass
 
         if highpass:
             cfg |= 0b10001000
@@ -171,9 +200,49 @@ class LIS3DH(BaseSensor):
 
         self._bus.write_register(self.CTRL_REG1, cfg)
 
+    def enable_adc(self) -> None:
+        self.set_continuous_mode(False)
+
+        cfg = self._bus.read_register(self.TEMP_CFG_REG)
+
+        cfg |= 0x01000000
+
+        self._bus.write_register(self.TEMP_CFG_REG, cfg)
+
+    def disable_adc(self) -> None:
+        self.set_continuous_mode(True)
+
+        cfg = self._bus.read_register(self.TEMP_CFG_REG)
+
+        cfg &= 0x10111111
+
+        self._bus.write_register(self.TEMP_CFG_REG, cfg)
+
     def read(self) -> list[float]:
         raw_values = self._read_sensors()
         return [self._raw_sensor_value_to_gravity(value) for value in raw_values]
+
+    def read_adc(self, channel: int) -> float:
+        if channel == 1:
+            reg_h = self.OUT_ADC1_H
+            reg_l = self.OUT_ADC1_L
+        elif channel == 2:
+            reg_h = self.OUT_ADC2_H
+            reg_l = self.OUT_ADC2_L
+        elif channel == 3:
+            reg_h = self.OUT_ADC3_H
+            reg_l = self.OUT_ADC3_L
+
+        adc_h = self._bus.read_register(reg_h)
+
+        if self._resolution != 'low':
+            adc_l = self._bus.read_register(reg_l)
+
+            adc_out = (adc_h << 8 | adc_l) >> 6
+        else:
+            adc_out = adc_h
+
+        return self._raw_adc_value_to_volts(adc_out)
 
     def new_data_available(self) -> bool:
         status = self._bus.read_register(self.STATUS_REGISTER)
@@ -199,11 +268,58 @@ class LIS3DH(BaseSensor):
 
         return (x, y, z)
 
+    def _convert_twos_complement(self, value: int, bits: int) -> float:
+        max_value = 2**bits
+        if value > max_value / 2.0:
+            value -= max_value
+
+        return value
+
+    def _map_scales(
+        self,
+        value: float,
+        scale1_low: float,
+        scale1_high: float,
+        scale2_low: float,
+        scale2_high: float,
+    ) -> float:
+        '''
+        Maps a value in one scale to its proportional equivalent in another scale.
+        Used in converting raw binary values to real units.
+        '''
+
+        value = (
+            (value - scale1_low)
+            * ((scale2_high - scale2_low) / (scale1_high - scale1_low))
+        ) + scale2_low
+
+        return value
+
+    def _raw_adc_value_to_volts(self, value: int) -> float:
+        if self._resolution == 'low':
+            bits = 8
+        else:
+            bits = 10
+
+        value = self._convert_twos_complement(value, bits)
+
+        return self._map_scales(
+            value,
+            -((bits - 1) ** 2),
+            ((bits - 1) ** 2),
+            0.8,
+            1.6,
+        )
+
     def _raw_sensor_value_to_gravity(self, value: int) -> float:
         bits = self.RESOLUTIONS[self._resolution]
 
-        max_val = 2**bits
-        if value > max_val / 2.0:
-            value -= max_val
+        value = self._convert_twos_complement(value, bits)
 
-        return float(value) / ((max_val / 2) / self._measurement_range)
+        return self._map_scales(
+            value,
+            -((bits - 1) ** 2),
+            ((bits - 1) ** 2),
+            -self._measurement_range,
+            self._measurement_range,
+        )
