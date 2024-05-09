@@ -59,6 +59,7 @@ class LIS3DH(BaseSensor):
         super().__init__(bus)
 
         # defaults
+        self._continuous_mode = True
         self._resolution = "low"
         self._measurement_range = 2
         self._datarate = 5376
@@ -79,6 +80,8 @@ class LIS3DH(BaseSensor):
 
     def set_continuous_mode(self, continuous: bool) -> None:
         cfg = self._bus.read_register(self.CTRL_REG4)
+
+        self._continuous_mode = continuous
 
         # set bit7 to 0 if continous, 1 otherwise
         if continuous:
@@ -270,6 +273,7 @@ class LIS3DH(BaseSensor):
 
     def _convert_twos_complement(self, value: int, bits: int) -> float:
         max_value = 2**bits
+
         if value > max_value / 2.0:
             value -= max_value
 
