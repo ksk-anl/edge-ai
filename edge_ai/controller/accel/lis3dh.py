@@ -17,11 +17,13 @@ class LIS3DH(BaseController):
         self._interface = interface
 
         # defaults
+        self._continuous_mode = True
         self._resolution = "low"
         self._measurement_range = 2
         self._datarate = 5376
         self._selftest = "off"
         self._highpass = False
+        self._adc = False
         self._x = True
         self._y = True
         self._z = True
@@ -37,6 +39,9 @@ class LIS3DH(BaseController):
         busconfig = {"address": address, "busnum": busnum}
         controller = LIS3DH("i2c", busconfig)
         return controller
+
+    def set_continuous_mode(self, continuous: bool) -> None:
+        self._continuous_mode = continuous
 
     def set_measurement_range(self, measurement_range: int) -> None:
         if measurement_range not in sensor.accel.LIS3DH.MEASUREMENT_RANGES:
@@ -73,6 +78,16 @@ class LIS3DH(BaseController):
     def enable_highpass(self, highpass: bool = True) -> None:
         self._highpass = highpass
 
+    def enable_axes(self, x: bool = True, y: bool = True, z: bool = True) -> None:
+        self._x = x
+        self._y = y
+        self._z = z
+
+    def enable_adc(self, adc: bool) -> None:
+        self._adc = adc
+        if adc:
+            self._continuous_mode = False
+
     def read_for(
         self, seconds: float = 0, timeformat: str = "%Y-%m-%d %H:%M:%S.%f"
     ) -> list[tuple[str, list[float]]]:
@@ -80,10 +95,10 @@ class LIS3DH(BaseController):
 
         return self._external_pipe.recv()
 
-    def enable_axes(self, x: bool = True, y: bool = True, z: bool = True) -> None:
-        self._x = x
-        self._y = y
-        self._z = z
+    def read_adc(self, channel: int) -> float:
+        self._external_pipe.send(("read adc", channel))
+
+        return self._external_pipe.recv()
 
     def _read_for(
         self, seconds: float, timeformat: str
@@ -109,23 +124,22 @@ class LIS3DH(BaseController):
             raise Exception("Mode must be spi or i2c")
 
     def _configure_sensor(self) -> None:
+        self._sensor.set_continuous_mode(self._continuous_mode)
         self._sensor.set_resolution(self._resolution)
         self._sensor.set_datarate(self._datarate)
         self._sensor.set_measurement_range(self._measurement_range)
         self._sensor.enable_axes(self._x, self._y, self._z)
         self._sensor.set_selftest(self._selftest)
         self._sensor.enable_highpass(self._highpass)
+        self._sensor.enable_adc(self._adc)
 
     def _internal_loop(self, pipe: Connection) -> None:
-        # this is a loop that manages the running of the sensor.
+        # This is a loop that manages the running of the sensor.
 
         # Initialize Sensor
         self._sensor = self._initialize_sensor()
 
         # Write any settings, config, etc
-        self._sensor.set_datarate(5376)
-        self._sensor.enable_axes()
-        self._sensor.set_selftest("off")
         self._configure_sensor()
 
         while True:
@@ -138,3 +152,5 @@ class LIS3DH(BaseController):
                     pipe.send(self._sensor.read())
                 elif message[0] == "read for":
                     pipe.send(self._read_for(message[1], message[2]))
+                elif message[0] == "read adc":
+                    pipe.send(self._sensor.read_adc(message[1]))

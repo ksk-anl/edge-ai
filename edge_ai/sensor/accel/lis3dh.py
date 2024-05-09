@@ -203,21 +203,17 @@ class LIS3DH(BaseSensor):
 
         self._bus.write_register(self.CTRL_REG1, cfg)
 
-    def enable_adc(self) -> None:
-        self.set_continuous_mode(False)
-
+    def enable_adc(self, adc: bool = True) -> None:
         cfg = self._bus.read_register(self.TEMP_CFG_REG)
 
-        cfg |= 0x01000000
+        if adc:
+            self.set_continuous_mode(False)
 
-        self._bus.write_register(self.TEMP_CFG_REG, cfg)
+            cfg |= 0x01000000
+        else:
+            self.set_continuous_mode(True)
 
-    def disable_adc(self) -> None:
-        self.set_continuous_mode(True)
-
-        cfg = self._bus.read_register(self.TEMP_CFG_REG)
-
-        cfg &= 0x10111111
+            cfg &= 0x10111111
 
         self._bus.write_register(self.TEMP_CFG_REG, cfg)
 
