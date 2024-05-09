@@ -135,6 +135,8 @@ class LIS3DH(BaseController):
 
     def _internal_loop(self, pipe: Connection) -> None:
         # This is a loop that manages the running of the sensor.
+        # This function starts when Controller.start() is called, and
+        # runs in a subprocess.
 
         # Initialize Sensor
         self._sensor = self._initialize_sensor()
@@ -143,7 +145,7 @@ class LIS3DH(BaseController):
         self._configure_sensor()
 
         while True:
-            # poll the pipe
+            # poll the pipe for messages from the parent process
             if pipe.poll():
                 message = pipe.recv()
 
