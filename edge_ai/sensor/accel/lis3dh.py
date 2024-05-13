@@ -266,7 +266,7 @@ class LIS3DH(BaseSensor):
             y = (y << 8 | yl) >> bitshift
             z = (z << 8 | zl) >> bitshift
 
-        print(f'{x:12b}, {y:12b}, {z:12b}')
+        print(f'{x:012b}, {y:012b}, {z:012b}')
         return (x, y, z)
 
     def _convert_twos_complement(self, value: int, bits: int) -> float:
