@@ -257,7 +257,7 @@ class LIS3DH(BaseSensor):
         yl = self._bus.read_register(self.OUT_Y_L)
         zl = self._bus.read_register(self.OUT_Z_L)
 
-        print(f'{x:08b} {xl:08b}, {y:08b} {yl:08b}, {z:08b} {zl:08b}')
+        # print(f'{x:08b} {xl:08b}, {y:08b} {yl:08b}, {z:08b} {zl:08b}')
 
         if self._resolution != "low":
 
@@ -268,7 +268,7 @@ class LIS3DH(BaseSensor):
             y = (y << 8 | yl) >> bitshift
             z = (z << 8 | zl) >> bitshift
 
-        print(f'{x:016b}, {y:016b}, {z:016b}')
+        # print(f'{x:016b}, {y:016b}, {z:016b}')
         return (x, y, z)
 
     def _convert_twos_complement(self, value: int, bits: int) -> float:
@@ -297,6 +297,8 @@ class LIS3DH(BaseSensor):
         scale1_low = float(scale1_low)
         scale2_high = float(scale2_high)
         scale2_low = float(scale2_low)
+
+        print(f'Mapping from {scale1_low}-{scale1_high} to {scale2_low}-{scale2_high}')
 
         value = (
             (value - scale1_low)
