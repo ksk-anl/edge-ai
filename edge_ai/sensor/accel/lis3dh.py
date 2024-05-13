@@ -209,11 +209,11 @@ class LIS3DH(BaseSensor):
         if adc:
             self.set_continuous_mode(False)
 
-            cfg |= 0x01000000
+            cfg |= 0x10000000
         else:
             self.set_continuous_mode(True)
 
-            cfg &= 0x10111111
+            cfg &= 0x01111111
 
         self._bus.write_register(self.TEMP_CFG_REG, cfg)
 
@@ -236,7 +236,6 @@ class LIS3DH(BaseSensor):
         adc_l = self._bus.read_register(reg_l)
 
         if self._resolution != 'low':
-
             adc_out = (adc_h << 8 | adc_l) >> 6
         else:
             adc_out = adc_h
