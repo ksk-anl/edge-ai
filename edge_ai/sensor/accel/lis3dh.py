@@ -298,7 +298,7 @@ class LIS3DH(BaseSensor):
         scale2_high = float(scale2_high)
         scale2_low = float(scale2_low)
 
-        print(f'Mapping from {scale1_low}-{scale1_high} to {scale2_low}-{scale2_high}')
+        # print(f'Mapping from {scale1_low}-{scale1_high} to {scale2_low}-{scale2_high}')
 
         value = (
             (value - scale1_low)
