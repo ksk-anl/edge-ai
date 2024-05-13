@@ -45,6 +45,9 @@ def _motionsensor_adc_test(sensor: sensor.accel.LIS3DH) -> None:
     sensor.set_resolution("high")
     sensor.enable_adc(True)
 
+    print(f'Temp config: {sensor._bus.read_register(sensor.TEMP_CFG_REG)}')
+    print(f'Config register 4: {sensor._bus.read_register(sensor.CTRL_REG4)}')
+
     print("Outputting Motion Sensor ADC output:")
     while True:
         readings = [sensor.read_adc(i) for i in range(1, 4)]
