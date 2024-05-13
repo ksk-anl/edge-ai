@@ -28,6 +28,7 @@ def _motionsensor_test(sensor: sensor.accel.LIS3DH) -> None:
     sensor.set_resolution("low")
     sensor.set_datarate(5376)
     sensor.set_selftest("off")
+    sensor.set_continuous_mode(True)
     sensor.enable_axes()
 
     print("Outputting Motion Sensor output, Ctrl + C to stop:")
