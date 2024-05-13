@@ -66,13 +66,13 @@ def motionsensor_spi() -> None:
 @allow_kbinterrupt
 def motionsensor_adc_i2c() -> None:
     motionsensor = sensor.accel.LIS3DH.I2C(0x18, 1)
-    _motionsensor_test(motionsensor)
+    _motionsensor_adc_test(motionsensor)
 
 
 @allow_kbinterrupt
 def motionsensor_adc_spi() -> None:
     motionsensor = sensor.accel.LIS3DH.SPI(0, 0)
-    _motionsensor_test(motionsensor)
+    _motionsensor_adc_test(motionsensor)
 
 
 @allow_kbinterrupt
