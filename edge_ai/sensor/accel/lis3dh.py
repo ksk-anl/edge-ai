@@ -317,8 +317,8 @@ class LIS3DH(BaseSensor):
 
         return self._map_scales(
             value,
-            -((bits - 1) ** 2),
-            ((bits - 1) ** 2),
+            -(2 ** (bits - 1)),
+            (2 ** (bits - 1)),
             0.8,
             1.6,
         )
@@ -330,8 +330,8 @@ class LIS3DH(BaseSensor):
 
         return self._map_scales(
             value,
-            -((bits - 1) ** 2),
-            ((bits - 1) ** 2),
+            -(2 ** (bits - 1)),
+            (2 ** (bits - 1)),
             -self._measurement_range,
             self._measurement_range,
         )
