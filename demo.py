@@ -43,7 +43,7 @@ def _motionsensor_test(sensor: sensor.accel.LIS3DH) -> None:
 
 def _motionsensor_adc_test(sensor: sensor.accel.LIS3DH) -> None:
     sensor.set_resolution("high")
-    sensor.enable_adc()
+    sensor.enable_adc(True)
 
     print("Outputting Motion Sensor ADC output:")
     while True:
