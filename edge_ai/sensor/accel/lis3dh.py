@@ -233,9 +233,9 @@ class LIS3DH(BaseSensor):
             reg_l = self.OUT_ADC3_L
 
         adc_h = self._bus.read_register(reg_h)
+        adc_l = self._bus.read_register(reg_l)
 
         if self._resolution != 'low':
-            adc_l = self._bus.read_register(reg_l)
 
             adc_out = (adc_h << 8 | adc_l) >> 6
         else:
@@ -253,10 +253,11 @@ class LIS3DH(BaseSensor):
         y = self._bus.read_register(self.OUT_Y_H)
         z = self._bus.read_register(self.OUT_Z_H)
 
+        xl = self._bus.read_register(self.OUT_X_L)
+        yl = self._bus.read_register(self.OUT_Y_L)
+        zl = self._bus.read_register(self.OUT_Z_L)
+
         if self._resolution != "low":
-            xl = self._bus.read_register(self.OUT_X_L)
-            yl = self._bus.read_register(self.OUT_Y_L)
-            zl = self._bus.read_register(self.OUT_Z_L)
 
             # Determine the number of "empty bits" on the right
             bitshift = 16 - self.RESOLUTIONS[self._resolution]
