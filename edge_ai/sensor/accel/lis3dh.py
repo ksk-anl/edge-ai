@@ -257,6 +257,8 @@ class LIS3DH(BaseSensor):
         yl = self._bus.read_register(self.OUT_Y_L)
         zl = self._bus.read_register(self.OUT_Z_L)
 
+        print(f'{x:08b} {xl:08b}, {y:08b} {yl:08b}, {z:08b} {zl:08b}')
+
         if self._resolution != "low":
 
             # Determine the number of "empty bits" on the right
@@ -266,7 +268,7 @@ class LIS3DH(BaseSensor):
             y = (y << 8 | yl) >> bitshift
             z = (z << 8 | zl) >> bitshift
 
-        print(f'{x:012b}, {y:012b}, {z:012b}')
+        print(f'{x:016b}, {y:016b}, {z:016b}')
         return (x, y, z)
 
     def _convert_twos_complement(self, value: int, bits: int) -> float:
