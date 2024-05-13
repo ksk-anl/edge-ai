@@ -209,13 +209,13 @@ class LIS3DH(BaseSensor):
         if adc:
             self.set_continuous_mode(False)
 
-            cfg |= 0x10000000
+            cfg |= 0b10000000
         else:
             self.set_continuous_mode(True)
 
-            cfg &= 0x01111111
+            cfg &= 0b01111111
 
-        print(f'Enabled/Disabled ADC: cfg = {cfg:08b}')
+        # print(f'Enabled/Disabled ADC: cfg = {cfg:08b}')
 
         self._bus.write_register(self.TEMP_CFG_REG, cfg)
 
