@@ -235,6 +235,8 @@ class LIS3DH(BaseSensor):
         adc_h = self._bus.read_register(reg_h)
         adc_l = self._bus.read_register(reg_l)
 
+        print(f'{adc_h:08b} {adc_l:08b}')
+
         if self._resolution != 'low':
             adc_out = (adc_h << 8 | adc_l) >> 6
         else:
