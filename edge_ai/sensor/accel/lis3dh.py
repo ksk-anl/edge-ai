@@ -215,6 +215,8 @@ class LIS3DH(BaseSensor):
 
             cfg &= 0x01111111
 
+        print(f'Enabled/Disabled ADC: cfg = {cfg:08b}')
+
         self._bus.write_register(self.TEMP_CFG_REG, cfg)
 
     def read(self) -> list[float]:
