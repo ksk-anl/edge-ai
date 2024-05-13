@@ -49,6 +49,7 @@ def _motionsensor_adc_test(sensor: sensor.accel.LIS3DH) -> None:
         print(
             f'Channel 1: {readings[0]: 1.5f}, Channel 2: {readings[1]: 1.5f}, Channel 3: {readings[2]: 1.5f}'
         )
+        time.sleep(0.1)
 
 
 @allow_kbinterrupt
