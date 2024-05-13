@@ -237,7 +237,7 @@ class LIS3DH(BaseSensor):
         adc_h = self._bus.read_register(reg_h)
         adc_l = self._bus.read_register(reg_l)
 
-        print(f'{adc_h:08b} {adc_l:08b}')
+        # print(f'{adc_h:08b} {adc_l:08b}')
 
         if self._resolution != 'low':
             adc_out = (adc_h << 8 | adc_l) >> 6
@@ -322,8 +322,8 @@ class LIS3DH(BaseSensor):
             value,
             -(2 ** (bits - 1)),
             (2 ** (bits - 1)),
-            0.8,
             1.6,
+            0.8,
         )
 
     def _raw_sensor_value_to_gravity(self, value: int) -> float:
