@@ -1,6 +1,7 @@
 {
     "timeformat": "%Y-%m-%d %H:%M:%S.%f",
     "train": true,
+    "using_motionsensor_adc": false,
     "rdb_access": {
         "dbname": "",
         "user": "",

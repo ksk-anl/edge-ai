@@ -35,7 +35,11 @@ def _event_loop(
     logging.info("Waiting for high ADC reading (Object Detection)")
     while True:
         time.sleep(config["adc_measurement_interval"])
-        val = adc.read()
+
+        if config["using_motionsensor_adc"]:
+            val = motionsensor.read_adc()
+        else:
+            val = adc.read()
         if val > config["adc_threshold"]:
             break
     logging.info(f'Object detected. Waiting for {config["wait_time"]} seconds')
@@ -126,16 +130,26 @@ def main() -> None:
         # Initialize Sensors
         logging.info("Intializing sensors")
         motionsensor = LIS3DH.SPI(**config["motionsensor_spi"])
-        adc = ADS1015.I2C(**config["adc_i2c"])
+
+        if config["using_motionsensor_adc"]:
+            adc = None
+        else:
+            adc = ADS1015.I2C(**config["adc_i2c"])
+
         logging.info("Sensors Initialized")
 
         # Configure sensors
         logging.info("Configuring sensors")
         motionsensor.set_datarate(5376)
         motionsensor.enable_axes()
+
+        if config["using_motionsensor_adc"]:
+            motionsensor.enable_adc()
+        else:
+            adc.start()
+
         motionsensor.start()
 
-        adc.start()
         logging.info("Sensors Configured")
 
         # Initialize Database connection
