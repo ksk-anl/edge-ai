@@ -261,65 +261,39 @@ def adc_triggers_motionsensor_controller() -> None:
             time.sleep(0.1)
 
 
+TESTS = {
+    1: (motionsensor_i2c, "Test LIS3DH (I2C)"),
+    2: (motionsensor_spi, "Test LIS3DH (SPI)"),
+    3: (motionsensor_adc_i2c, "Test LIS3DH ADC (I2C)"),
+    4: (motionsensor_adc_spi, "Test LIS3DH ADC (I2C)"),
+    5: (adc_sensor_i2c, "Test ADS1015 (I2C)"),
+    6: (motionsensor_controller_i2c, "Test LIS3DH Controller (I2C)"),
+    7: (motionsensor_controller_spi, "Test LIS3DH Controller (SPI)"),
+    8: (motionsensor_controller_run_for_i2c, "Run LIS3DH for 10 seconds (I2C)"),
+    9: (motionsensor_controller_run_for_spi, "Run LIS3DH for 10 seconds (SPI)"),
+    10: (motionsensor_adc_controller_i2c, "Test LIS3DH ADC Controller (I2C)"),
+    11: (motionsensor_adc_controller_spi, "Test LIS3DH ADC Controller (SPI)"),
+    12: (adc_controller_i2c, "Test ADS1015 Controller (I2C)"),
+}
+
+# Other tests:
+# adc_triggers_motionsensor_sensor()
+# adc_triggers_motionsensor_controller()
+
+
 def main():
     while True:
         print("=" * 30)
         print("Choose a Demo:")
-        print("Sensor Class Tests:")
-        print("    LIS3DH Tests:")
-        print("    1: Test Motionsensor (I2C)")
-        print("    2: Test Motionsensor (SPI)")
-        print("    3: Test Motionsensor ADC (I2C)")
-        print("    4: Test Motionsensor ADC (SPI)")
-        print("    ADS1015 Tests:")
-        print("    5: Test ADC")
-        print("    Combined Tests:")
-        print("    6: ADC HIGH triggers motion sensor")
-        print("Controller Class Tests")
-        print("    LIS3DH Tests:")
-        print("    7: Test Motionsensor (I2C)")
-        print("    8: Test Motionsensor (SPI)")
-        print("    9: Test Motionsensor for 10 seconds (I2C)")
-        print("    10: Test Motionsensor for 10 seconds (SPI)")
-        print("    11: Test Motionsensor ADC (I2C)")
-        print("    12: Test Motionsensor ADC (SPI)")
-        print("    ADS1015 Tests:")
-        print("    13: Test ADC")
-        print("Combined Tests:")
-        print("    14: ADC HIGH triggers motion sensor")
+        for key, test in TESTS.items():
+            print(f"    {key}: { test[1] }")
 
         print("\n")
         choice = input("Enter choice (q to quit): ")
         if choice == "q":
             break
-        elif choice == "1":
-            motionsensor_i2c()
-        elif choice == "2":
-            motionsensor_spi()
-        elif choice == "3":
-            motionsensor_adc_i2c()
-        elif choice == "4":
-            motionsensor_adc_spi()
-        elif choice == "5":
-            adc_sensor_i2c()
-        elif choice == "6":
-            adc_triggers_motionsensor_sensor()
-        elif choice == "7":
-            motionsensor_controller_i2c()
-        elif choice == "8":
-            motionsensor_controller_spi()
-        elif choice == "9":
-            motionsensor_controller_run_for_i2c()
-        elif choice == "10":
-            motionsensor_controller_run_for_spi()
-        elif choice == "11":
-            motionsensor_adc_controller_i2c()
-        elif choice == "12":
-            motionsensor_adc_controller_spi()
-        elif choice == "13":
-            adc_controller_i2c()
-        elif choice == "14":
-            adc_triggers_motionsensor_controller()
+        else:
+            TESTS[choice][0]()
 
 
 if __name__ == "__main__":
