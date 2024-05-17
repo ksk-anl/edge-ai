@@ -83,7 +83,7 @@ class LIS3DH(BaseController):
         self._y = y
         self._z = z
 
-    def enable_adc(self, adc: bool) -> None:
+    def enable_adc(self, adc: bool = True) -> None:
         self._adc = adc
         if adc:
             self._continuous_mode = False
