@@ -293,7 +293,7 @@ def main():
         if choice == "q":
             break
         else:
-            TESTS[choice][0]()
+            TESTS[int(choice)][0]()
 
 
 if __name__ == "__main__":
