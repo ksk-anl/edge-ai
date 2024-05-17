@@ -27,7 +27,7 @@ def _format_motionsensor_output(values: list[float]) -> str:
 def _motionsensor_test(sensor: sensor.accel.LIS3DH) -> None:
     sensor.set_resolution("high")
     sensor.set_datarate(100)
-    sensor.set_measurement_range(4)
+    sensor.set_measurement_range(2)
     sensor.set_selftest("off")
     sensor.set_continuous_mode(False)
     sensor.enable_axes()
@@ -43,6 +43,10 @@ def _motionsensor_test(sensor: sensor.accel.LIS3DH) -> None:
 
 def _motionsensor_adc_test(sensor: sensor.accel.LIS3DH) -> None:
     sensor.set_resolution("high")
+    sensor.set_datarate(100)
+    sensor.set_measurement_range(2)
+    sensor.set_selftest("off")
+    sensor.set_continuous_mode(False)
     sensor.enable_adc(True)
 
     # print(f'Temp config: {sensor._bus.read_register(sensor.TEMP_CFG_REG):08b}')
