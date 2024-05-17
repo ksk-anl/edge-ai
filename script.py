@@ -144,6 +144,7 @@ def main() -> None:
         motionsensor.enable_axes()
 
         if config["using_motionsensor_adc"]:
+            motionsensor.set_continuous_mode(False)
             motionsensor.enable_adc()
         else:
             adc.start()

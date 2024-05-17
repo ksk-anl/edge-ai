@@ -277,7 +277,7 @@ class LIS3DH(BaseSensor):
     def _convert_twos_complement(self, value: int, bits: int) -> float:
         max_value = 2**bits
 
-        if value > max_value / 2.0:
+        if value >= max_value / 2.0:
             value -= max_value
 
         return value
