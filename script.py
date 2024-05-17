@@ -37,7 +37,7 @@ def _event_loop(
         time.sleep(config["adc_measurement_interval"])
 
         if config["using_motionsensor_adc"]:
-            val = motionsensor.read_adc()
+            val = motionsensor.read_adc(1)  # TODO: set this in config
         else:
             val = adc.read()
         if val > config["adc_threshold"]:
