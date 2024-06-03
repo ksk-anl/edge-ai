@@ -269,7 +269,7 @@ TESTS = {
     1: (motionsensor_i2c, "Test LIS3DH (I2C)"),
     2: (motionsensor_spi, "Test LIS3DH (SPI)"),
     3: (motionsensor_adc_i2c, "Test LIS3DH ADC (I2C)"),
-    4: (motionsensor_adc_spi, "Test LIS3DH ADC (I2C)"),
+    4: (motionsensor_adc_spi, "Test LIS3DH ADC (SPI)"),
     5: (adc_sensor_i2c, "Test ADS1015 (I2C)"),
     6: (motionsensor_controller_i2c, "Test LIS3DH Controller (I2C)"),
     7: (motionsensor_controller_spi, "Test LIS3DH Controller (SPI)"),
