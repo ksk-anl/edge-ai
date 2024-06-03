@@ -25,7 +25,7 @@ def _format_motionsensor_output(values: list[float]) -> str:
 
 
 def _motionsensor_test(sensor: sensor.accel.LIS3DH) -> None:
-    sensor.set_resolution("high")
+    sensor.set_resolution("low")
     sensor.set_datarate(100)
     sensor.set_measurement_range(2)
     sensor.set_selftest("off")
@@ -42,7 +42,7 @@ def _motionsensor_test(sensor: sensor.accel.LIS3DH) -> None:
 
 
 def _motionsensor_adc_test(sensor: sensor.accel.LIS3DH) -> None:
-    sensor.set_resolution("high")
+    sensor.set_resolution("low")
     sensor.set_datarate(100)
     sensor.set_measurement_range(2)
     sensor.set_selftest("off")
